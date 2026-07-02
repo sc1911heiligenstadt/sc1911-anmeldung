@@ -309,12 +309,32 @@ let compareSelection = new Set();
 let lastEventEntries = [];
 
 // ── Teilnehmer-Tab (passwortgeschützt) ────────────────────────────────────────
-const TEILNEHMER_PASSWORD = 'sc1911';
+// Das Passwort wird serverseitig geprüft (Worker-Secret PW_ANMELDUNG_TEILNEHMER
+// im ToolsUebersicht-Worker "landingpage") und steht nicht mehr im Quellcode.
+const PASSWORT_PRUEF_URL = 'https://landingpage.michel-brunner.workers.dev';
 
-function openTeilnehmerTab() {
+async function openTeilnehmerTab() {
   const pw = prompt('Bitte Passwort eingeben:');
   if (pw === null) return;
-  if (pw !== TEILNEHMER_PASSWORD) { alert('Falsches Passwort.'); return; }
+  let resp;
+  try {
+    resp = await fetch(PASSWORT_PRUEF_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verify-action-password', scope: 'anmeldung-teilnehmer', password: pw })
+    });
+  } catch (_) {
+    alert('Passwortprüfung nicht möglich — keine Verbindung zum Server.');
+    return;
+  }
+  if (resp.status === 403) { alert('Falsches Passwort.'); return; }
+  if (!resp.ok) {
+    const body = await resp.json().catch(() => ({}));
+    alert(body.error === 'Unbekannte Aktion'
+      ? 'Der Server kennt die Passwortprüfung noch nicht — das Worker-Update (landingpage) muss erst deployed werden.'
+      : 'Passwortprüfung fehlgeschlagen: ' + (body.error || ('HTTP ' + resp.status)));
+    return;
+  }
   document.getElementById('teilnehmer-overlay').style.display = 'flex';
   renderTeilnehmerDeleteList();
 }
