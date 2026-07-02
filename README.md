@@ -1,4 +1,4 @@
-# sc1911-anmeldung
+# sc1911-anmeldung (v1.0)
 
 Digitales Anmeldesystem für Trainerversammlungen beim 1. SC 1911 Heiligenstadt. Zwei statische HTML-Seiten, kein Build-Prozess, Firebase Realtime Database als Backend.
 
