@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Trainerversammlung – Anmeldung</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+  :root {
+    --primary: #1a56db;
+    --success: #057a55;
+    --bg: #f0f4ff;
+    --card: #ffffff;
+    --border: #d1d5db;
+    --text: #111827;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  .logo { width: 72px; height: auto; margin-bottom: 12px; }
+  .club-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .event-info {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    min-height: 18px;
+  }
+  label {
+    display: block;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  input[type="text"] {
+    width: 100%;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 14px;
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 18px;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  button {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  button:hover { filter: brightness(0.92); }
+  button:active { filter: brightness(0.85); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Success state */
+  .success-box {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+  }
+  .success-icon { font-size: 64px; }
+  .success-name { font-size: 20px; font-weight: 800; color: var(--text); }
+  .success-time { font-size: 13px; color: var(--muted); }
+  .success-msg {
+    background: #d1fae5;
+    color: #065f46;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    width: 100%;
+  }
+  .lock-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Duplicate state */
+  .duplicate-msg {
+    display: none;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .footer {
+    margin-top: 28px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="card" id="form-card">
+  <img class="logo" src="logo.png" alt="1. SC 1911 e.V. Heilbad Heiligenstadt" />
+  <div class="club-name">1. SC 1911 Heiligenstadt</div>
+  <h1>Trainerversammlung</h1>
+  <p class="event-info" id="event-info">Lade…</p>
+
+  <div id="form-section">
+    <div class="duplicate-msg" id="dup-msg"></div>
+    <label for="firstname-input">Vorname</label>
+    <input type="text" id="firstname-input" placeholder="Vorname" autocomplete="off"
+      onkeydown="if(event.key==='Enter') document.getElementById('lastname-input').focus()">
+    <label for="lastname-input">Nachname</label>
+    <input type="text" id="lastname-input" placeholder="Nachname" autocomplete="off"
+      onkeydown="if(event.key==='Enter') anmelden()">
+    <button onclick="anmelden()" id="submit-btn">✔ Jetzt anmelden</button>
+  </div>
+
+  <div class="success-box" id="success-box">
+    <div class="success-icon">🎉</div>
+    <div class="success-name" id="success-name"></div>
+    <div class="success-time" id="success-time"></div>
+    <div class="success-msg">✅ Erfolgreich angemeldet!</div>
+    <div class="lock-note">🔒 Diese Anmeldung ist mit diesem Gerät verknüpft – eine erneute Anmeldung ist hier nicht möglich.</div>
+  </div>
+
+  <div class="footer">1. SC 1911 Heiligenstadt · Anmeldesystem</div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCTQPx36ENruBa4pswYspksSDkJmp6gyts",
+  authDomain: "trainerversammlung.firebaseapp.com",
+  databaseURL: "https://trainerversammlung-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "trainerversammlung",
+  storageBucket: "trainerversammlung.firebasestorage.app",
+  messagingSenderId: "759093739854",
+  appId: "1:759093739854:web:672174b8a7bd72729d1e1f"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let eventId = new URLSearchParams(location.search).get('event');
+let LOCK_KEY = null;
+let meetingEnded = false;
+
+// Namen robust vergleichen: Gross/Kleinschreibung egal, mehrfache/ungewoehnliche
+// Leerzeichen (z.B. aus CSV/Excel) werden zusammengefasst, damit "Thomas  Mueller"
+// und "Thomas Mueller" als dieselbe Person erkannt werden.
+function normalizeName(s) {
+  return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function showSuccess(name, time) {
+  document.getElementById('form-section').style.display = 'none';
+  document.getElementById('success-box').style.display = 'flex';
+  document.getElementById('success-name').textContent = name;
+  document.getElementById('success-time').textContent = 'Angemeldet um ' + time + ' Uhr';
+}
+
+// Gerätesperre: wenn dieses Gerät sich für diese Versammlung schon einmal angemeldet hat, keine erneute Anmeldung erlauben
+function checkDeviceLock() {
+  const locked = JSON.parse(localStorage.getItem(LOCK_KEY) || 'null');
+  if (locked) {
+    showSuccess(locked.name, locked.time);
+    return true;
+  }
+  return false;
+}
+
+// Load event info (live, in case die Verwaltung-Seite die Veranstaltung ändert)
+function loadEventInfo() {
+  db.ref('veranstaltungen/' + eventId + '/meta').on('value', snap => {
+    const meta = snap.val() || {};
+    const el = document.getElementById('event-info');
+    if (meta.name || meta.date) {
+      let txt = meta.name || 'Trainerversammlung';
+      if (meta.date) {
+        txt += ' · ' + new Date(meta.date + 'T12:00:00').toLocaleDateString('de-DE', {
+          day: '2-digit', month: '2-digit', year: 'numeric'
+        });
+      }
+      el.textContent = txt;
+    } else {
+      el.textContent = new Date().toLocaleDateString('de-DE', {
+        weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+      });
+    }
+    meetingEnded = !!meta.endedAt;
+    applyEndedState();
+  });
+}
+
+// Beendete Versammlung: keine Anmeldung mehr möglich (live, falls während offener Seite beendet)
+function applyEndedState() {
+  const submitBtn = document.getElementById('submit-btn');
+  const dupMsg = document.getElementById('dup-msg');
+  const formVisible = document.getElementById('form-section').style.display !== 'none';
+  if (meetingEnded) {
+    if (submitBtn) submitBtn.disabled = true;
+    if (dupMsg && formVisible) {
+      dupMsg.textContent = '🔒 Diese Versammlung ist bereits beendet. Eine Anmeldung ist nicht mehr möglich.';
+      dupMsg.style.display = 'block';
+      dupMsg.dataset.ended = '1';
+    }
+  } else {
+    if (submitBtn) submitBtn.disabled = false;
+    // Reaktiviert: ggf. zurückgebliebene "beendet"-Meldung entfernen
+    if (dupMsg && dupMsg.dataset.ended === '1') {
+      dupMsg.style.display = 'none';
+      dupMsg.textContent = '';
+      delete dupMsg.dataset.ended;
+    }
+  }
+}
+
+function anmelden() {
+  if (!eventId) {
+    alert('Kein gültiger Anmeldelink. Bitte den QR-Code der Verwaltungsseite neu scannen.');
+    return;
+  }
+  if (meetingEnded) {
+    const dupMsg = document.getElementById('dup-msg');
+    dupMsg.textContent = '🔒 Diese Versammlung ist bereits beendet. Eine Anmeldung ist nicht mehr möglich.';
+    dupMsg.style.display = 'block';
+    return;
+  }
+  if (checkDeviceLock()) return;
+
+  const firstEl = document.getElementById('firstname-input');
+  const lastEl = document.getElementById('lastname-input');
+  const firstname = firstEl.value.trim();
+  const lastname = lastEl.value.trim();
+  const name = (firstname + ' ' + lastname).trim();
+  const dupMsg = document.getElementById('dup-msg');
+  const submitBtn = document.getElementById('submit-btn');
+  dupMsg.style.display = 'none';
+
+  if (!firstname || !lastname) {
+    const missingEl = !firstname ? firstEl : lastEl;
+    missingEl.focus();
+    [firstEl, lastEl].forEach(el => { if (!el.value.trim()) el.style.borderColor = '#ef4444'; });
+    setTimeout(() => { firstEl.style.borderColor = ''; lastEl.style.borderColor = ''; }, 1500);
+    return;
+  }
+
+  submitBtn.disabled = true;
+  const anmeldungenRef = db.ref('veranstaltungen/' + eventId + '/anmeldungen');
+  anmeldungenRef.once('value').then(snap => {
+    const data = snap.val() || {};
+    const target = normalizeName(name);
+    const match = Object.entries(data).find(([k, p]) => normalizeName(p.name) === target);
+
+    if (match) {
+      const [key, existing] = match;
+      if (existing.present) {
+        submitBtn.disabled = false;
+        dupMsg.textContent = '⚠️ ' + existing.name + ' ist bereits angemeldet (' + existing.time + ' Uhr).';
+        dupMsg.style.display = 'block';
+        lastEl.select();
+        return;
+      }
+      // Person steht auf der importierten Liste, war aber noch nicht eingecheckt -> jetzt einchecken
+      const now = new Date();
+      const time = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      return anmeldungenRef.child(key).update({
+        present: true,
+        time,
+        timestamp: now.toISOString()
+      }).then(() => {
+        submitBtn.disabled = false;
+        localStorage.setItem(LOCK_KEY, JSON.stringify({ name: existing.name, time }));
+        showSuccess(existing.name, time);
+      });
+    }
+
+    // Name steht nicht auf der Teilnehmerliste -> Selbstanmeldung per QR-Code nicht möglich
+    submitBtn.disabled = false;
+    dupMsg.textContent = '❌ ' + name + ' steht nicht auf der Teilnehmerliste. Bitte beim Trainer melden.';
+    dupMsg.style.display = 'block';
+    lastEl.select();
+  }).catch(err => {
+    submitBtn.disabled = false;
+    alert('Fehler bei der Anmeldung: ' + err.message);
+  });
+}
+
+function init() {
+  // Reste aus der alten localStorage-Version (vor der Firebase-Umstellung) entfernen
+  try {
+    localStorage.removeItem('sc1911_anmeldungen');
+    localStorage.removeItem('sc1911_meta');
+  } catch (e) {}
+
+  if (eventId) {
+    LOCK_KEY = 'sc1911_meine_anmeldung_' + eventId;
+    loadEventInfo();
+    checkDeviceLock();
+    return;
+  }
+  // Kein Link-Parameter (alter/manuell aufgerufener Link) -> aktive Versammlung nehmen
+  db.ref('config/activeEvent').once('value').then(snap => {
+    eventId = snap.val();
+    if (!eventId) {
+      document.getElementById('event-info').textContent = 'Keine aktive Versammlung gefunden.';
+      document.getElementById('submit-btn').disabled = true;
+      return;
+    }
+    LOCK_KEY = 'sc1911_meine_anmeldung_' + eventId;
+    loadEventInfo();
+    checkDeviceLock();
+  });
+}
+init();
+</script>
+</body>
+</html>
