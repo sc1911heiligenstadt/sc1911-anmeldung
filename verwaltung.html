@@ -65,6 +65,17 @@
   }
   .stat-num { font-size: 24px; font-weight: 800; color: var(--primary); }
   .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .dashboard-bar { padding: 10px 16px 0; }
+  .back-to-dashboard {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary);
+    text-decoration: none;
+  }
+  .back-to-dashboard:hover { text-decoration: underline; }
   .controls { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
   .controls input {
     flex: 1; min-width: 160px; border: 1px solid var(--border);
@@ -118,6 +129,7 @@
 </style>
 </head>
 <body>
+<div class="dashboard-bar"><a href="https://tecko1985.github.io/ToolsUebersicht/" class="back-to-dashboard">← Zurück zum Dashboard</a></div>
 
 <header>
   <span class="icon">⚽</span>
