@@ -22,13 +22,15 @@
   }
   header {
     background: var(--primary); color: white;
-    padding: 16px 24px; display: flex; align-items: center; gap: 14px;
+    padding: 16px 24px; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   }
   header .icon { font-size: 26px; }
   header h1 { font-size: 18px; font-weight: 700; }
   header p  { font-size: 12px; opacity: 0.85; }
-  .header-logo { height: 40px; width: auto; display: block; margin-left: auto; }
+  .header-left { display: flex; align-items: center; gap: 14px; flex: 1 1 200px; }
+  .header-right { display: flex; align-items: center; flex: 1 1 200px; justify-content: flex-end; }
+  .header-logo { height: 40px; width: auto; display: block; }
   .meta-bar {
     background: white; border-bottom: 1px solid var(--border);
     padding: 10px 24px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
@@ -65,17 +67,23 @@
   }
   .stat-num { font-size: 24px; font-weight: 800; color: var(--primary); }
   .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .dashboard-bar { padding: 10px 16px 0; }
   .back-to-dashboard {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     font-size: 14px;
-    font-weight: 500;
-    color: var(--primary);
+    font-weight: 600;
+    color: white;
     text-decoration: none;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 16px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    transition: background 0.15s ease;
   }
-  .back-to-dashboard:hover { text-decoration: underline; }
+  .back-to-dashboard:hover { background: rgba(255, 255, 255, 0.28); text-decoration: none; }
   .controls { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
   .controls input {
     flex: 1; min-width: 160px; border: 1px solid var(--border);
@@ -129,15 +137,18 @@
 </style>
 </head>
 <body>
-<div class="dashboard-bar"><a href="https://tecko1985.github.io/ToolsUebersicht/" class="back-to-dashboard">← Zurück zum Dashboard</a></div>
-
 <header>
-  <span class="icon">⚽</span>
-  <div>
-    <h1>1. SC 1911 Heiligenstadt – Verwaltung</h1>
-    <p id="header-sub">Trainerversammlung · Teilnehmerliste</p>
+  <div class="header-left">
+    <span class="icon">⚽</span>
+    <div>
+      <h1>1. SC 1911 Heiligenstadt – Verwaltung</h1>
+      <p id="header-sub">Trainerversammlung · Teilnehmerliste</p>
+    </div>
   </div>
-  <img class="header-logo" src="logo.png" alt="1. SC 1911 e.V. Heilbad Heiligenstadt" />
+  <a href="https://tecko1985.github.io/ToolsUebersicht/" class="back-to-dashboard">← Zurück zum Dashboard</a>
+  <div class="header-right">
+    <img class="header-logo" src="logo.png" alt="1. SC 1911 e.V. Heilbad Heiligenstadt" />
+  </div>
 </header>
 
 <div class="meta-bar">
