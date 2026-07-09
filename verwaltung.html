@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verwaltung – Trainerversammlung 1. SC 1911 Heiligenstadt</title>
+<style>
+  :root {
+    --primary: #1a56a0;
+    --success: #057a55;
+    --danger: #c81e1e;
+    --bg: #f3f4f6;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #111827;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+  header {
+    background: var(--primary); color: white;
+    padding: 16px 24px; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  header .icon { font-size: 26px; }
+  header h1 { font-size: 18px; font-weight: 700; }
+  header p  { font-size: 12px; opacity: 0.85; }
+  .header-left { display: flex; align-items: center; gap: 14px; flex: 1 1 200px; }
+  .header-right { display: flex; align-items: center; flex: 1 1 200px; justify-content: flex-end; }
+  .header-logo { height: 40px; width: auto; display: block; }
+  .meta-bar {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 10px 24px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  }
+  .meta-bar input {
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 10px; font-size: 14px; color: var(--text); background: var(--bg);
+  }
+  .meta-bar label { font-size: 13px; color: var(--muted); }
+  .container { max-width: 1000px; margin: 24px auto; padding: 0 16px; display: grid; gap: 20px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width:640px){ .row2 { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 7px; font-size: 13px; font-weight: 600;
+    border: none; cursor: pointer; transition: filter 0.15s;
+  }
+  .btn:hover { filter: brightness(0.92); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger  { background: var(--danger); color: white; }
+  .btn-outline { background: white; color: var(--primary); border: 1px solid var(--primary); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .stat {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 16px; text-align: center; min-width: 80px;
+  }
+  .stat-num { font-size: 24px; font-weight: 800; color: var(--primary); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .back-to-dashboard {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 16px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    transition: background 0.15s ease;
+  }
+  .back-to-dashboard:hover { background: rgba(255, 255, 255, 0.28); text-decoration: none; }
+  .controls { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .controls input {
+    flex: 1; min-width: 160px; border: 1px solid var(--border);
+    border-radius: 7px; padding: 7px 11px; font-size: 14px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    text-align: left; padding: 8px 10px; font-size: 11px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--border); cursor: pointer; user-select: none; white-space: nowrap;
+  }
+  thead th:hover { color: var(--primary); }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:hover { background: #f9fafb; }
+  tbody td { padding: 9px 10px; vertical-align: middle; }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 700;
+  }
+  .badge-present { background: #d1fae5; color: #065f46; }
+  .badge-absent  { background: #fee2e2; color: #991b1b; }
+  .row-actions { display: flex; gap: 6px; }
+  .empty-state { text-align: center; padding: 40px; color: var(--muted); }
+  .empty-state .ei { font-size: 40px; margin-bottom: 10px; }
+  /* QR section */
+  .qr-url-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .qr-url-row input { flex:1; border:1px solid var(--border); border-radius:7px; padding:8px 12px; font-size:13px; }
+  #qr-display { text-align: center; margin-top: 10px; }
+  #qr-display canvas, #qr-display img {
+    border: 1px solid var(--border); border-radius: 8px; max-width: 275px;
+  }
+  .qr-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  /* Manual add */
+  .add-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .add-row input { flex:1; border:1px solid var(--border); border-radius:7px; padding:8px 12px; font-size:14px; }
+  .time-cell { font-size: 11px; color: var(--muted); }
+  /* live badge */
+  .live-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #22c55e; margin-right: 5px; animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  @media print {
+    header { background: #333 !important; -webkit-print-color-adjust: exact; }
+    .meta-bar, .row2, .controls button, .row-actions, button, .no-print { display: none !important; }
+    .controls input { display: none !important; }
+    body { background: white; }
+    .card { border: none; box-shadow: none; padding: 0; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <span class="icon">⚽</span>
+    <div>
+      <h1>1. SC 1911 Heiligenstadt – Verwaltung</h1>
+      <p id="header-sub">Trainerversammlung · Teilnehmerliste</p>
+    </div>
+  </div>
+  <a href="https://tecko1985.github.io/ToolsUebersicht/" class="back-to-dashboard">← Zurück zum Dashboard</a>
+  <div class="header-right">
+    <img class="header-logo" src="logo.png" alt="1. SC 1911 e.V. Heilbad Heiligenstadt" />
+  </div>
+</header>
+
+<div class="meta-bar">
+  <label>Veranstaltung:</label>
+  <input type="text" id="event-name" placeholder="z. B. Trainerversammlung Sommer 2026"
+    style="width:280px" oninput="saveMeta()">
+  <label>Datum:</label>
+  <input type="date" id="event-date" oninput="saveMeta()">
+  <button id="btn-new-event" class="btn btn-success btn-sm" style="display:none" onclick="openNewEventDialog()">🆕 Neue Versammlung starten</button>
+  <button id="btn-end-meeting" class="btn btn-danger btn-sm" style="display:none" onclick="endMeeting()">🔴 Besprechung beenden</button>
+  <span style="font-size:12px;color:var(--muted)">
+    <span class="live-dot"></span>Live-Synchronisation (Firebase)
+  </span>
+  <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openVersammlungenTab()">📜 Versammlungen</button>
+  <button class="btn btn-primary btn-sm" onclick="openTeilnehmerTab()">👥 Teilnehmer</button>
+</div>
+
+<div class="container">
+
+  <div id="viewing-banner" class="card no-print" style="display:none;font-size:12px;background:#fef3c7;color:#92400e;border-radius:6px;padding:8px 10px"></div>
+
+  <div class="row2">
+
+    <!-- QR Code card -->
+    <div class="card">
+      <h2>🔳 Scannen zum Anmelden</h2>
+      <input type="hidden" id="qr-url">
+      <div id="qr-display">
+        <p style="color:var(--muted);font-size:13px;">QR-Code wird erzeugt…</p>
+      </div>
+      <div class="qr-hint">Rechtsklick auf den QR-Code → Bild speichern oder direkt drucken</div>
+      <button class="btn btn-outline" style="margin-top:12px;width:100%" onclick="printQR()">
+        🖨 QR-Code drucken
+      </button>
+    </div>
+
+    <!-- Manual add card -->
+    <div class="card">
+      <h2>✏️ Manuell hinzufügen</h2>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+        Für Trainer ohne Smartphone oder mit technischen Problemen. Hier kann auch jemand eingetragen werden,
+        der nicht auf der importierten Liste steht.
+      </p>
+      <div class="add-row">
+        <input type="text" id="manual-name" placeholder="Vor- und Nachname"
+          onkeydown="if(event.key==='Enter') manualAdd()">
+      </div>
+      <button class="btn btn-success" style="width:100%" onclick="manualAdd()">➕ Hinzufügen</button>
+    </div>
+
+  </div>
+
+  <!-- Participant List -->
+  <div class="card">
+    <h2>👥 Teilnehmerliste <span id="live-label" style="font-size:11px;font-weight:400;color:var(--muted)"></span></h2>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num" id="stat-present" style="color:var(--success)">0</div>
+        <div class="stat-label">Anwesend</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="stat-absent" style="color:var(--danger)">0</div>
+        <div class="stat-label">Abwesend</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="search" placeholder="🔍 Suchen…" oninput="renderTable()">
+      <span id="last-update" style="font-size:11px;color:var(--muted)"></span>
+    </div>
+
+    <div id="table-wrap"></div>
+  </div>
+</div>
+
+<!-- Neue Versammlung: Name & Datum abfragen -->
+<div id="new-event-overlay" class="no-print" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="max-width:420px;width:100%">
+    <h2 style="margin-bottom:14px">🆕 Neue Versammlung starten</h2>
+    <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Name der Versammlung</label>
+    <input type="text" id="new-event-name" placeholder="z. B. Trainerversammlung Sommer 2026"
+      style="width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:14px;margin-bottom:14px"
+      onkeydown="if(event.key==='Enter') document.getElementById('new-event-date').focus()">
+    <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Datum</label>
+    <input type="date" id="new-event-date"
+      style="width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:14px;margin-bottom:18px"
+      onkeydown="if(event.key==='Enter') confirmNewEvent()">
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">
+      Die Teilnehmerliste der zuletzt aktiven Versammlung wird übernommen (alle zunächst als abwesend).
+      Die bisherige Versammlung bleibt in der Historie erhalten.
+    </p>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline btn-sm" onclick="closeNewEventDialog()">Abbrechen</button>
+      <button class="btn btn-success btn-sm" onclick="confirmNewEvent()">✔ Anlegen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Versammlungen: Übersicht, Statistiken & Berichte -->
+<div id="versammlungen-overlay" class="no-print" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="max-width:560px;width:100%;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h2 style="margin:0">📜 Versammlungen</h2>
+      <button class="btn btn-outline btn-sm" onclick="closeVersammlungenTab()">✕ Schließen</button>
+    </div>
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin-bottom:12px;cursor:pointer">
+      <input type="checkbox" id="compare-mode" onchange="toggleCompareMode()">
+      🔀 Versammlungen vergleichen (bis zu 4 auswählen)
+    </label>
+    <div id="versammlungen-list"></div>
+  </div>
+</div>
+
+<!-- Teilnehmer-Verwaltung (passwortgeschützt) -->
+<div id="teilnehmer-overlay" class="no-print" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="max-width:520px;width:100%;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h2 style="margin:0">👥 Teilnehmer verwalten</h2>
+      <button class="btn btn-outline btn-sm" onclick="closeTeilnehmerTab()">✕ Schließen</button>
+    </div>
+
+    <h2 style="font-size:14px">➕ Teilnehmer hinzufügen</h2>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+      <input type="text" id="new-participant-name" placeholder="Vor- und Nachname" style="flex:1" onkeydown="if(event.key==='Enter')addParticipant()">
+      <button class="btn btn-success btn-sm" onclick="addParticipant()">➕ Hinzufügen</button>
+    </div>
+    <div id="add-participant-result" style="font-size:12px;color:var(--muted);margin-bottom:16px"></div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+
+    <h2 style="font-size:14px">📋 Liste importieren</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">
+      CSV/TXT – eine Zeile pro Person ("Vorname;Nachname" oder voller Name). Importierte Personen stehen zunächst auf <strong>abwesend</strong>.
+    </p>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+      <input type="file" id="import-file" accept=".csv,.txt" style="flex:1;min-width:160px">
+      <button class="btn btn-success btn-sm" onclick="importCSV()">⬆ Importieren</button>
+    </div>
+    <div id="import-result" style="font-size:12px;color:var(--muted);margin-bottom:16px"></div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+
+    <h2 style="font-size:14px">✏️ Bearbeiten / Löschen</h2>
+    <div id="teilnehmer-delete-list" style="display:flex;flex-direction:column;gap:6px;margin-top:10px"></div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+
+    <h2 style="font-size:14px">⬇ Export & Aktionen</h2>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+      <button class="btn btn-outline" onclick="exportCSV()">⬇ CSV exportieren (Excel)</button>
+      <button class="btn btn-outline" onclick="window.print()">🖨 Liste drucken</button>
+      <button class="btn btn-danger btn-sm" onclick="clearAll()" style="margin-top:4px">
+        🗑 Alle Einträge löschen
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCTQPx36ENruBa4pswYspksSDkJmp6gyts",
+  authDomain: "trainerversammlung.firebaseapp.com",
+  databaseURL: "https://trainerversammlung-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "trainerversammlung",
+  storageBucket: "trainerversammlung.firebasestorage.app",
+  messagingSenderId: "759093739854",
+  appId: "1:759093739854:web:672174b8a7bd72729d1e1f"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let sortCol = 'timestamp', sortDir = -1;
+let participants = [];
+let activeEventId = null;
+let viewingEventId = null;
+let participantsRef = null;
+let compareMode = false;
+let compareSelection = new Set();
+let lastEventEntries = [];
+
+// ── Teilnehmer-Tab (passwortgeschützt) ────────────────────────────────────────
+// Das Passwort wird serverseitig geprüft (Worker-Secret PW_ANMELDUNG_TEILNEHMER
+// im ToolsUebersicht-Worker "landingpage") und steht nicht mehr im Quellcode.
+const PASSWORT_PRUEF_URL = 'https://landingpage.michel-brunner.workers.dev';
+
+async function openTeilnehmerTab() {
+  const pw = prompt('Bitte Passwort eingeben:');
+  if (pw === null) return;
+  let resp;
+  try {
+    resp = await fetch(PASSWORT_PRUEF_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verify-action-password', scope: 'anmeldung-teilnehmer', password: pw })
+    });
+  } catch (_) {
+    alert('Passwortprüfung nicht möglich — keine Verbindung zum Server.');
+    return;
+  }
+  if (resp.status === 403) { alert('Falsches Passwort.'); return; }
+  if (!resp.ok) {
+    const body = await resp.json().catch(() => ({}));
+    alert(body.error === 'Unbekannte Aktion'
+      ? 'Der Server kennt die Passwortprüfung noch nicht — das Worker-Update (landingpage) muss erst deployed werden.'
+      : 'Passwortprüfung fehlgeschlagen: ' + (body.error || ('HTTP ' + resp.status)));
+    return;
+  }
+  document.getElementById('teilnehmer-overlay').style.display = 'flex';
+  renderTeilnehmerDeleteList();
+}
+
+function closeTeilnehmerTab() {
+  document.getElementById('teilnehmer-overlay').style.display = 'none';
+}
+
+function renderTeilnehmerDeleteList() {
+  const wrap = document.getElementById('teilnehmer-delete-list');
+  if (!wrap) return;
+  if (participants.length === 0) {
+    wrap.innerHTML = '<p style="font-size:13px;color:var(--muted)">Keine Teilnehmer vorhanden.</p>';
+    return;
+  }
+  const sorted = [...participants].sort((a,b) => (a.name||'').localeCompare(b.name||'', 'de', { sensitivity: 'base' }));
+  wrap.innerHTML = sorted.map(p => `
+    <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);border-radius:7px;padding:6px 10px">
+      <span style="font-size:13px">${esc(p.name)} <span class="badge ${p.present?'badge-present':'badge-absent'}" style="margin-left:6px">${p.present?'✓':'✗'}</span></span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="editEntry('${p.key}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="removeEntry('${p.key}')">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function editEntry(key) {
+  const p = participants.find(x => x.key === key);
+  if (!p) return;
+  const newName = prompt('Name bearbeiten:', p.name);
+  if (newName === null) return;
+  const trimmed = newName.trim();
+  if (!trimmed) { alert('Name darf nicht leer sein.'); return; }
+  if (normalizeName(trimmed) !== normalizeName(p.name) &&
+      participants.some(x => x.key !== key && normalizeName(x.name) === normalizeName(trimmed))) {
+    alert(trimmed + ' ist bereits in der Liste vorhanden.');
+    return;
+  }
+  db.ref('veranstaltungen/' + viewingEventId + '/anmeldungen/' + key).update({ name: trimmed });
+}
+
+// ── Versammlungen (Events) ────────────────────────────────────────────────────
+async function ensureActiveEvent() {
+  const activeSnap = await db.ref('config/activeEvent').once('value');
+  if (activeSnap.exists()) return activeSnap.val();
+
+  // Migration: alte, flache Datenstruktur (vor Mehrfach-Versammlungen) übernehmen, falls vorhanden
+  let oldMeta = {}, oldAnmeldungen = null;
+  try {
+    const [oldMetaSnap, oldAnmeldSnap] = await Promise.all([
+      db.ref('meta').once('value'),
+      db.ref('anmeldungen').once('value')
+    ]);
+    oldMeta = oldMetaSnap.val() || {};
+    oldAnmeldungen = oldAnmeldSnap.exists() ? oldAnmeldSnap.val() : null;
+  } catch (e) {
+    // Alte Pfade evtl. durch Sicherheitsregeln gesperrt -> einfach ohne Migration starten
+  }
+  const ref = db.ref('veranstaltungen').push();
+  await ref.child('meta').set({
+    name: oldMeta.name || 'Trainerversammlung',
+    date: oldMeta.date || '',
+    createdAt: new Date().toISOString()
+  });
+  if (oldAnmeldungen) await ref.child('anmeldungen').set(oldAnmeldungen);
+  await db.ref('config/activeEvent').set(ref.key);
+  return ref.key;
+}
+
+function initEventsIndex() {
+  db.ref('veranstaltungen').on('value', snap => {
+    const all = snap.val() || {};
+    const entries = Object.entries(all).map(([id, ev]) => ({ id, meta: ev.meta || {}, anmeldungen: ev.anmeldungen || {} }));
+    entries.sort((a, b) => (b.meta.createdAt || '').localeCompare(a.meta.createdAt || ''));
+    renderVersammlungenList(entries);
+  });
+}
+
+// ── Versammlungen-Tab: Übersicht mit Statistiken & Berichten ────────────────
+function openVersammlungenTab() {
+  document.getElementById('versammlungen-overlay').style.display = 'flex';
+}
+
+function closeVersammlungenTab() {
+  document.getElementById('versammlungen-overlay').style.display = 'none';
+}
+
+function toggleCompareMode() {
+  compareMode = document.getElementById('compare-mode').checked;
+  if (!compareMode) compareSelection.clear();
+  renderVersammlungenList(lastEventEntries);
+}
+
+function toggleCompareSelect(id, checked) {
+  if (checked) {
+    if (compareSelection.size >= 4) {
+      alert('Bitte maximal 4 Versammlungen für den Vergleich auswählen.');
+      renderVersammlungenList(lastEventEntries);
+      return;
+    }
+    compareSelection.add(id);
+  } else {
+    compareSelection.delete(id);
+  }
+  renderVersammlungenList(lastEventEntries);
+}
+
+function renderVersammlungenList(entries) {
+  lastEventEntries = entries;
+  const validIds = new Set(entries.map(e => e.id));
+  Array.from(compareSelection).forEach(id => { if (!validIds.has(id)) compareSelection.delete(id); });
+  const wrap = document.getElementById('versammlungen-list');
+  if (!wrap) return;
+  if (entries.length === 0) {
+    wrap.innerHTML = '<p style="font-size:13px;color:var(--muted)">Keine Versammlungen vorhanden.</p>';
+    return;
+  }
+  let html = entries.map(e => {
+    const list = Object.values(e.anmeldungen);
+    const present = list.filter(isPresent).length;
+    const absent = list.length - present;
+    const quote = list.length > 0 ? Math.round((present / list.length) * 100) : 0;
+    const dateTxt = e.meta.date ? new Date(e.meta.date + 'T12:00:00').toLocaleDateString('de-DE') : '';
+    const status = e.id === activeEventId ? ' ⚡ aktiv' : (e.meta.endedAt ? ' ✅ beendet' : '');
+    const checked = compareSelection.has(e.id);
+    const disableCheckbox = !checked && compareSelection.size >= 4;
+    const checkboxHtml = compareMode
+      ? `<input type="checkbox" style="margin-right:10px;transform:scale(1.3)" ${checked ? 'checked' : ''} ${disableCheckbox ? 'disabled' : ''} onchange="toggleCompareSelect('${e.id}', this.checked)">`
+      : '';
+    return `<div style="border:1px solid var(--border);border-radius:7px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+      <div style="display:flex;align-items:center">
+        ${checkboxHtml}
+        <div>
+          <div style="font-weight:700;font-size:13px">${esc(e.meta.name || 'Ohne Namen')}${status}</div>
+          <div style="font-size:12px;color:var(--muted)">${dateTxt ? dateTxt + ' · ' : ''}✓ ${present} Anwesend · ✗ ${absent} Abwesend · ${list.length} Gesamt · 📊 ${quote}% Teilnahmequote</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="selectEvent('${e.id}'); closeVersammlungenTab();">👁 Ansehen</button>
+        <button class="btn btn-primary btn-sm" onclick="openMeetingReport('${e.id}')">🖨 Bericht</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEvent('${e.id}')">🗑 Löschen</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (compareMode) {
+    html += `<div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <span style="font-size:12px;color:var(--muted)">${compareSelection.size}/4 ausgewählt</span>
+      <button class="btn btn-primary btn-sm" ${compareSelection.size < 2 ? 'disabled' : ''} onclick="showComparison()">📊 Vergleich anzeigen</button>
+    </div>`;
+  }
+
+  wrap.innerHTML = html;
+}
+
+function showComparison() {
+  const ids = Array.from(compareSelection);
+  if (ids.length < 2) { alert('Bitte mindestens 2 Versammlungen auswählen.'); return; }
+  const selected = lastEventEntries.filter(e => ids.includes(e.id));
+  selected.sort((a, b) => (a.meta.createdAt || '').localeCompare(b.meta.createdAt || ''));
+
+  const persons = {};
+  selected.forEach(ev => {
+    Object.values(ev.anmeldungen || {}).forEach(p => {
+      const key = normalizeName(p.name);
+      if (!key) return;
+      if (!persons[key]) persons[key] = { name: p.name, perEvent: {} };
+      persons[key].perEvent[ev.id] = isPresent(p);
+    });
+  });
+
+  const rows = Object.values(persons).map(person => {
+    const presentCount = selected.filter(ev => person.perEvent[ev.id]).length;
+    const quote = Math.round((presentCount / selected.length) * 100);
+    return { ...person, quote };
+  });
+  rows.sort((a, b) => b.quote - a.quote || a.name.localeCompare(b.name));
+
+  const colHead = selected.map(ev => `<th>${esc(ev.meta.name || 'Ohne Namen')}${ev.meta.date ? ' (' + new Date(ev.meta.date + 'T12:00:00').toLocaleDateString('de-DE') + ')' : ''}</th>`).join('');
+  const rowHtml = r => `<tr>
+      <td>${esc(r.name)}</td>
+      ${selected.map(ev => `<td style="text-align:center">${r.perEvent[ev.id] ? '✓' : '✗'}</td>`).join('')}
+      <td style="text-align:center;font-weight:700">${r.quote}%</td>
+    </tr>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
+  <title>Vergleich Versammlungen</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#111827;padding:32px;max-width:900px;margin:0 auto}
+    h1{font-size:20px;margin-bottom:4px}
+    .sub{color:#6b7280;font-size:13px;margin-bottom:18px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;color:#6b7280;border-bottom:2px solid #e5e7eb}
+    td{padding:6px 8px;border-bottom:1px solid #e5e7eb}
+    @media print { button { display:none } }
+  </style></head><body>
+  <h1>⚽ 1. SC 1911 Heiligenstadt – Vergleich</h1>
+  <div class="sub">${selected.length} Versammlungen · ${rows.length} Teilnehmer</div>
+  <table><thead><tr><th>Name</th>${colHead}<th>Quote</th></tr></thead>
+  <tbody>${rows.map(rowHtml).join('')}</tbody></table>
+  <button onclick="window.print()" style="margin-top:20px;padding:10px 16px;border:none;border-radius:7px;background:#1a56db;color:white;font-weight:600;cursor:pointer">🖨 Drucken / Als PDF speichern</button>
+  </body></html>`);
+  w.document.close();
+}
+
+function selectEvent(eventId) {
+  if (!eventId) return;
+  attachParticipantsListener(eventId);
+  loadMetaForEvent(eventId);
+}
+
+function openNewEventDialog() {
+  document.getElementById('new-event-name').value = '';
+  document.getElementById('new-event-date').value = todayStr();
+  document.getElementById('new-event-overlay').style.display = 'flex';
+  document.getElementById('new-event-name').focus();
+}
+
+function closeNewEventDialog() {
+  document.getElementById('new-event-overlay').style.display = 'none';
+}
+
+async function confirmNewEvent() {
+  const name = document.getElementById('new-event-name').value.trim();
+  const date = document.getElementById('new-event-date').value;
+  if (!name) { document.getElementById('new-event-name').focus(); return; }
+
+  closeNewEventDialog();
+
+  // Teilnehmerliste der zuletzt aktiven Versammlung übernehmen (alle zunächst wieder abwesend)
+  const carryOver = {};
+  if (activeEventId) {
+    const prevSnap = await db.ref('veranstaltungen/' + activeEventId + '/anmeldungen').once('value');
+    const prevData = prevSnap.val() || {};
+    Object.values(prevData).forEach(p => {
+      if (p.source === 'Manuell') return; // nur temporär für diese Versammlung, nicht übernehmen
+      carryOver[normalizeName(p.name)] = {
+        name: p.name,
+        club: p.club || '1. SC 1911 Heiligenstadt',
+        time: '',
+        timestamp: '',
+        source: p.source || 'Übernommen',
+        present: false
+      };
+    });
+  }
+
+  const ref = db.ref('veranstaltungen').push();
+  await ref.child('meta').set({
+    name,
+    date,
+    createdAt: new Date().toISOString()
+  });
+  const carryOverList = Object.values(carryOver);
+  if (carryOverList.length > 0) {
+    const updates = {};
+    carryOverList.forEach(entry => {
+      updates[ref.child('anmeldungen').push().key] = entry;
+    });
+    await ref.child('anmeldungen').update(updates);
+  }
+  await db.ref('config/activeEvent').set(ref.key);
+  activeEventId = ref.key;
+  updateQR();
+  selectEvent(ref.key);
+}
+
+async function endMeeting() {
+  if (!viewingEventId) return;
+  const nameEl = document.getElementById('event-name');
+  const meetingName = nameEl.value || 'Trainerversammlung';
+  if (!confirm('"' + meetingName + '" jetzt beenden und als abgeschlossen speichern?')) return;
+
+  // Bericht-Fenster SOFORT oeffnen, solange die User-Geste (Klick) noch aktiv ist.
+  // Nach dem await unten wuerde der Popup-Blocker das Fenster sonst evtl. verhindern.
+  const w = window.open('', '_blank');
+  await db.ref('veranstaltungen/' + viewingEventId + '/meta').update({ endedAt: new Date().toISOString() });
+  await openMeetingReport(viewingEventId, w);
+  loadMetaForEvent(viewingEventId);
+}
+
+async function openMeetingReport(eventId, win) {
+  // Fenster sofort oeffnen (User-Geste noch aktiv), erst danach Daten laden.
+  const w = win || window.open('', '_blank');
+  if (w && !win) w.document.write('<!DOCTYPE html><meta charset="UTF-8"><body style="font-family:sans-serif;padding:32px;color:#555">Bericht wird geladen…</body>');
+
+  const snap = await db.ref('veranstaltungen/' + eventId).once('value');
+  const ev = snap.val() || {};
+  const meta = ev.meta || {};
+  const list = Object.values(ev.anmeldungen || {});
+  list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  const present = list.filter(isPresent);
+  const absent = list.filter(p => !isPresent(p));
+
+  const meetingName = meta.name || 'Trainerversammlung';
+  const dateTxt = meta.date ? new Date(meta.date + 'T12:00:00').toLocaleDateString('de-DE') : '';
+  const statusTxt = meta.endedAt
+    ? 'Beendet am ' + new Date(meta.endedAt).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' })
+    : 'Stand: ' + new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
+
+  const rowHtml = p => `<tr>
+      <td>${esc(p.name)}</td>
+      <td>${isPresent(p) ? '✓ Anwesend' : '✗ Abwesend'}</td>
+      <td>${esc(p.time || '')}</td>
+      <td>${esc(p.source || '')}</td>
+    </tr>`;
+
+  if (!w) { alert('Bitte Popups für diese Seite erlauben, um den Bericht zu öffnen.'); return; }
+  w.document.open();
+  w.document.write(`<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
+  <title>${esc(meetingName)} – Bericht</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#111827;padding:32px;max-width:800px;margin:0 auto}
+    h1{font-size:20px;margin-bottom:4px}
+    .sub{color:#6b7280;font-size:13px;margin-bottom:18px}
+    .stats{display:flex;gap:14px;margin-bottom:20px}
+    .stat{background:#f3f4f6;border-radius:8px;padding:8px 16px;text-align:center;min-width:90px}
+    .stat-num{font-size:22px;font-weight:800}
+    .stat-label{font-size:11px;color:#6b7280}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;color:#6b7280;border-bottom:2px solid #e5e7eb}
+    td{padding:6px 8px;border-bottom:1px solid #e5e7eb}
+    @media print { button { display:none } }
+  </style></head><body>
+  <h1>⚽ 1. SC 1911 Heiligenstadt – ${esc(meetingName)}</h1>
+  <div class="sub">${dateTxt ? dateTxt + ' · ' : ''}${statusTxt}</div>
+  <div class="stats">
+    <div class="stat"><div class="stat-num" style="color:#057a55">${present.length}</div><div class="stat-label">Anwesend</div></div>
+    <div class="stat"><div class="stat-num" style="color:#c81e1e">${absent.length}</div><div class="stat-label">Abwesend</div></div>
+    <div class="stat"><div class="stat-num">${list.length}</div><div class="stat-label">Gesamt</div></div>
+  </div>
+  <table><thead><tr><th>Name</th><th>Status</th><th>Uhrzeit</th><th>Quelle</th></tr></thead>
+  <tbody>${list.map(rowHtml).join('')}</tbody></table>
+  <button onclick="window.print()" style="margin-top:20px;padding:10px 16px;border:none;border-radius:7px;background:#1a56db;color:white;font-weight:600;cursor:pointer">🖨 Drucken / Als PDF speichern</button>
+  </body></html>`);
+  w.document.close();
+}
+
+async function deleteEvent(eventId) {
+  const deletedId = eventId || viewingEventId;
+  if (!deletedId) return;
+  const isActive = deletedId === activeEventId;
+  const wasViewing = deletedId === viewingEventId;
+  const confirmMsg = isActive
+    ? 'Diese Versammlung ist aktuell aktiv! Wirklich endgültig löschen? Alle Teilnehmerdaten gehen verloren.'
+    : 'Diese Versammlung und alle ihre Teilnehmerdaten wirklich endgültig löschen?';
+  if (!confirm(confirmMsg)) return;
+
+  await db.ref('veranstaltungen/' + deletedId).remove();
+
+  if (!isActive) {
+    if (wasViewing) selectEvent(activeEventId);
+    return;
+  }
+
+  // Aktive Versammlung wurde gelöscht: jüngste verbleibende übernehmen, sonst neu anlegen
+  const snap = await db.ref('veranstaltungen').once('value');
+  const all = snap.val() || {};
+  const remaining = Object.entries(all).map(([id, ev]) => ({ id, meta: ev.meta || {} }));
+  remaining.sort((a, b) => (b.meta.createdAt || '').localeCompare(a.meta.createdAt || ''));
+
+  let nextActive;
+  if (remaining.length > 0) {
+    nextActive = remaining[0].id;
+  } else {
+    const ref = db.ref('veranstaltungen').push();
+    await ref.child('meta').set({ name: 'Neue Versammlung', date: '', createdAt: new Date().toISOString() });
+    nextActive = ref.key;
+  }
+  await db.ref('config/activeEvent').set(nextActive);
+  activeEventId = nextActive;
+  updateQR();
+  selectEvent(nextActive);
+}
+
+function updateQR() {
+  if (!activeEventId) return;
+  const base = location.href.split(/[?#]/)[0].replace(/[^/]*$/, 'anmeldung.html');
+  document.getElementById('qr-url').value = base + '?event=' + activeEventId;
+  generateQR();
+}
+
+// ── Meta ─────────────────────────────────────────────────────────────────────
+let saveMetaTimer = null;
+function saveMeta() {
+  if (!viewingEventId) return;
+  updateHeaderSub();
+  // Schreibzugriff entprellen: nicht bei jedem Tastendruck nach Firebase schreiben,
+  // sondern erst kurz nach der letzten Eingabe (verhindert Flackern bei Live-Clients).
+  const eid = viewingEventId;
+  const meta = {
+    name: document.getElementById('event-name').value,
+    date: document.getElementById('event-date').value
+  };
+  clearTimeout(saveMetaTimer);
+  saveMetaTimer = setTimeout(() => {
+    db.ref('veranstaltungen/' + eid + '/meta').update(meta);
+  }, 400);
+}
+
+let metaRef = null;
+let viewingMeta = {};
+function loadMetaForEvent(eventId) {
+  if (metaRef) metaRef.off();
+  metaRef = db.ref('veranstaltungen/' + eventId + '/meta');
+  metaRef.on('value', snap => {
+    viewingMeta = snap.val() || {};
+    const nameEl = document.getElementById('event-name');
+    const dateEl = document.getElementById('event-date');
+    if (document.activeElement !== nameEl) nameEl.value = viewingMeta.name || '';
+    if (document.activeElement !== dateEl) dateEl.value = viewingMeta.date || '';
+    updateHeaderSub();
+    updateViewingBanner();
+    refreshMeetingButtons();
+  });
+}
+
+// Start/Beenden-Buttons nur sichtbar, wenn die AKTIVE Versammlung angesehen wird
+// (sonst könnte man versehentlich eine vergangene Versammlung verändern statt der laufenden)
+function refreshMeetingButtons() {
+  const isViewingActive = viewingEventId === activeEventId;
+  const ended = !!viewingMeta.endedAt;
+  document.getElementById('btn-new-event').style.display = (isViewingActive && ended) ? 'inline-flex' : 'none';
+  document.getElementById('btn-end-meeting').style.display = (isViewingActive && !ended) ? 'inline-flex' : 'none';
+}
+
+function updateHeaderSub() {
+  const name = document.getElementById('event-name').value || 'Trainerversammlung';
+  const date = document.getElementById('event-date').value;
+  let txt = name;
+  if (date) txt += ' · ' + new Date(date + 'T12:00:00').toLocaleDateString('de-DE');
+  document.getElementById('header-sub').textContent = txt + ' · Teilnehmerliste';
+}
+
+function updateViewingBanner() {
+  const banner = document.getElementById('viewing-banner');
+  if (!banner) return;
+  if (viewingEventId && activeEventId && viewingEventId !== activeEventId) {
+    banner.style.display = 'block';
+    banner.innerHTML = '📜 Du siehst eine vergangene Versammlung. ' +
+      '<a href="#" onclick="selectEvent(activeEventId); return false;" style="color:var(--primary);font-weight:700">Zur aktuellen Versammlung wechseln</a>';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// ── Data (live über Firebase) ─────────────────────────────────────────────────
+function attachParticipantsListener(eventId) {
+  if (participantsRef) participantsRef.off();
+  viewingEventId = eventId;
+  participantsRef = db.ref('veranstaltungen/' + eventId + '/anmeldungen');
+  participantsRef.on('value', snap => {
+    const data = snap.val() || {};
+    participants = Object.entries(data).map(([key, p]) => ({
+      key,
+      ...p,
+      present: p.present === undefined ? true : p.present
+    }));
+    renderTable();
+    renderTeilnehmerDeleteList();
+  });
+  updateViewingBanner();
+}
+
+// ── Manual add ───────────────────────────────────────────────────────────────
+function manualAdd() {
+  const nameEl = document.getElementById('manual-name');
+  const name = nameEl.value.trim();
+  if (!name || !viewingEventId) { nameEl.focus(); return; }
+
+  const existing = participants.find(p => normalizeName(p.name) === normalizeName(name));
+  const now = new Date();
+  if (existing) {
+    if (existing.present) {
+      alert(name + ' ist bereits als anwesend eingetragen.');
+      return;
+    }
+    // Person steht auf der importierten Liste, aber noch nicht eingecheckt -> jetzt einchecken
+    db.ref('veranstaltungen/' + viewingEventId + '/anmeldungen/' + existing.key).update({
+      present: true,
+      time: now.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' }),
+      timestamp: now.toISOString()
+    });
+  } else {
+    db.ref('veranstaltungen/' + viewingEventId + '/anmeldungen').push({
+      name,
+      club: '1. SC 1911 Heiligenstadt',
+      time: now.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' }),
+      timestamp: now.toISOString(),
+      source: 'Manuell',
+      present: true
+    });
+  }
+  nameEl.value = '';
+  nameEl.focus();
+}
+
+// ── CSV Import (Stammliste) ───────────────────────────────────────────────────
+function parseNameLine(line) {
+  const cols = line.split(/[;,\t]/).map(c => c.trim()).filter(Boolean);
+  if (cols.length >= 2) return (cols[0] + ' ' + cols[1]).trim();
+  return cols[0] || '';
+}
+
+// CSV/TXT robust dekodieren: zuerst UTF-8 versuchen; bei ungueltigen Bytes
+// (z.B. Excel-Export als Windows-1252/ANSI) automatisch darauf zurueckfallen,
+// damit Umlaute (ä/ö/ü/ß) nicht verstuemmelt werden.
+function decodeFileText(buffer) {
+  const bytes = new Uint8Array(buffer);
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch (e) {
+    return new TextDecoder('windows-1252').decode(bytes);
+  }
+}
+
+function addParticipant() {
+  const input = document.getElementById('new-participant-name');
+  const resultEl = document.getElementById('add-participant-result');
+  const name = input.value.trim();
+  if (!name) { input.focus(); return; }
+  if (!viewingEventId) { resultEl.textContent = 'Keine Versammlung ausgewählt.'; return; }
+
+  const key = normalizeName(name);
+  if (participants.some(p => normalizeName(p.name) === key)) {
+    resultEl.textContent = name + ' ist bereits in der Liste vorhanden.';
+    return;
+  }
+
+  const ref = db.ref('veranstaltungen/' + viewingEventId + '/anmeldungen').push();
+  ref.set({
+    name,
+    club: '1. SC 1911 Heiligenstadt',
+    time: '',
+    timestamp: '',
+    source: 'Manuell',
+    present: false
+  }).then(() => {
+    resultEl.textContent = '✅ ' + name + ' hinzugefügt (als abwesend).';
+    input.value = '';
+    input.focus();
+  }).catch(err => {
+    resultEl.textContent = 'Fehler: ' + err.message;
+  });
+}
+
+function importCSV() {
+  const fileInput = document.getElementById('import-file');
+  const file = fileInput.files[0];
+  const resultEl = document.getElementById('import-result');
+  if (!file) { resultEl.textContent = 'Bitte zuerst eine Datei auswählen.'; return; }
+  if (!viewingEventId) { resultEl.textContent = 'Keine Versammlung ausgewählt.'; return; }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = decodeFileText(reader.result);
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const existingNames = new Set(participants.map(p => normalizeName(p.name)));
+    const seen = new Set();
+    const toAdd = [];
+    lines.forEach(line => {
+      if (/^(vorname|name|nachname)/i.test(line)) return; // Kopfzeile überspringen
+      const name = parseNameLine(line);
+      if (!name) return;
+      const key = normalizeName(name);
+      if (existingNames.has(key) || seen.has(key)) return;
+      seen.add(key);
+      toAdd.push(name);
+    });
+
+    if (toAdd.length === 0) {
+      resultEl.textContent = 'Keine neuen Namen gefunden (eventuell bereits vorhanden).';
+      return;
+    }
+
+    const ref = db.ref('veranstaltungen/' + viewingEventId + '/anmeldungen');
+    const updates = {};
+    toAdd.forEach(name => {
+      const key = ref.push().key;
+      updates[key] = {
+        name,
+        club: '1. SC 1911 Heiligenstadt',
+        time: '',
+        timestamp: '',
+        source: 'Import',
+        present: false
+      };
+    });
+    ref.update(updates).then(() => {
+      resultEl.textContent = '✅ ' + toAdd.length + ' Teilnehmer importiert (als abwesend).';
+      fileInput.value = '';
+    }).catch(err => {
+      resultEl.textContent = 'Fehler beim Import: ' + err.message;
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── Toggle / Remove ───────────────────────────────────────────────────────────
+function togglePresence(key) {
+  const p = participants.find(x => x.key === key);
+  if (p) db.ref('veranstaltungen/' + viewingEventId + '/anmeldungen/' + key).update({ present: !p.present });
+}
+
+function removeEntry(key) {
+  if (!confirm('Eintrag wirklich löschen?')) return;
+  db.ref('veranstaltungen/' + viewingEventId + '/anmeldungen/' + key).remove();
+}
+
+function clearAll() {
+  if (!confirm('Wirklich ALLE Einträge dieser Versammlung löschen?')) return;
+  db.ref('veranstaltungen/' + viewingEventId + '/anmeldungen').remove();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  renderTable();
+}
+
+function isPresent(p) {
+  return p.present === undefined ? true : p.present;
+}
+
+// Namen robust vergleichen: Gross/Kleinschreibung egal, mehrfache Leerzeichen
+// (z.B. aus CSV/Excel) werden zusammengefasst.
+function normalizeName(s) {
+  return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Lokales Datum als YYYY-MM-DD. Nicht toISOString() verwenden – das liefert
+// das UTC-Datum und springt in der deutschen Zeitzone nach Mitternacht auf den Vortag.
+function todayStr() {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
+function renderTable() {
+  const q = (document.getElementById('search').value || '').toLowerCase();
+  let data = participants.filter(p => (p.name || '').toLowerCase().includes(q));
+
+  const arrow = col => col === sortCol ? (sortDir === 1 ? ' ▲' : ' ▼') : '';
+  data.sort((a,b) => {
+    if (sortCol === 'present') {
+      return sortDir * ((a.present?0:1) - (b.present?0:1));
+    }
+    // Deutsche Sortierreihenfolge: Umlaute (Ä/Ö/Ü/ß) korrekt einsortieren,
+    // Zahlen/Uhrzeiten natuerlich vergleichen.
+    const va = String(a[sortCol]||''), vb = String(b[sortCol]||'');
+    return sortDir * va.localeCompare(vb, 'de', { sensitivity: 'base', numeric: true });
+  });
+
+  document.getElementById('stat-present').textContent = participants.filter(p=>p.present).length;
+  document.getElementById('stat-absent').textContent = participants.filter(p=>!p.present).length;
+  document.getElementById('last-update').textContent =
+    'Zuletzt: ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  const wrap = document.getElementById('table-wrap');
+  const prevDetails = wrap.querySelector('details');
+  const detailsWasOpen = prevDetails ? prevDetails.open : false;
+  if (data.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="ei">📭</div>
+      <p>${participants.length===0
+        ? 'Noch keine Anmeldungen. QR-Code aufhängen und warten!'
+        : 'Keine Einträge gefunden.'}</p></div>`;
+    return;
+  }
+
+  const head = `<thead><tr>
+      <th onclick="sortBy('name')"># Name${arrow('name')}</th>
+      <th onclick="sortBy('present')">Status${arrow('present')}</th>
+      <th onclick="sortBy('time')">Uhrzeit${arrow('time')}</th>
+      <th onclick="sortBy('source')">Quelle${arrow('source')}</th>
+      <th>Aktionen</th>
+    </tr></thead>`;
+
+  const row = (p,i) => `<tr>
+        <td><strong>${i+1}. ${esc(p.name)}</strong></td>
+        <td><span class="badge ${p.present?'badge-present':'badge-absent'}">${p.present?'✓ Anwesend':'✗ Abwesend'}</span></td>
+        <td class="time-cell">${esc(p.time)}</td>
+        <td class="time-cell">${esc(p.source)}</td>
+        <td><div class="row-actions">
+          <button class="btn btn-outline btn-sm" onclick="togglePresence('${p.key}')">${p.present?'✗ Abwesend':'✓ Anwesend'}</button>
+        </div></td>
+      </tr>`;
+
+  const first5 = data.slice(0, 5);
+  const rest = data.slice(5);
+
+  let html = `<table>${head}<tbody>${first5.map((p,i) => row(p,i)).join('')}</tbody></table>`;
+
+  if (rest.length > 0) {
+    html += `<details style="margin-top:10px"${detailsWasOpen ? ' open' : ''}>
+      <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--primary);padding:6px 0">
+        📋 Alle Teilnehmer anzeigen (+${rest.length})
+      </summary>
+      <table style="margin-top:8px">${head}<tbody>${rest.map((p,i) => row(p,i+5)).join('')}</tbody></table>
+    </details>`;
+  }
+
+  wrap.innerHTML = html;
+}
+
+// ── QR Code generator ────────────────────────────────────────────────────────
+let qrTimeout = null;
+function generateQR() {
+  clearTimeout(qrTimeout);
+  qrTimeout = setTimeout(_buildQR, 400);
+}
+
+function _buildQR() {
+  const url = document.getElementById('qr-url').value.trim();
+  const display = document.getElementById('qr-display');
+  if (!url) { display.innerHTML = '<p style="color:var(--muted);font-size:13px;">QR-Code wird erzeugt…</p>'; return; }
+  display.innerHTML = '';
+  const div = document.createElement('div');
+  display.appendChild(div);
+  new QRCode(div, { text: url, width: 275, height: 275, correctLevel: QRCode.CorrectLevel.H });
+  const hint = document.createElement('div');
+  hint.style.cssText = 'font-size:12px;font-weight:600;margin-top:8px;color:var(--text)';
+  hint.textContent = '1. SC 1911 Heiligenstadt · Anmeldung';
+  display.appendChild(hint);
+}
+
+function printQR() {
+  const url = document.getElementById('qr-url').value.trim();
+  if (!url) { alert('Bitte zuerst die URL eingeben.'); return; }
+  // Find the generated QR image
+  const img = document.querySelector('#qr-display img') || document.querySelector('#qr-display canvas');
+  if (!img) { alert('Bitte kurz warten, QR-Code wird generiert…'); return; }
+  const src = img.tagName === 'CANVAS' ? img.toDataURL() : img.src;
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>QR-Code Anmeldung</title>
+  <style>body{font-family:sans-serif;text-align:center;padding:40px}
+  h2{font-size:22px;margin-bottom:6px}p{font-size:15px;color:#555;margin-bottom:20px}
+  img{width:260px;height:260px;border:2px solid #eee;border-radius:8px;padding:8px}
+  .url{font-size:11px;color:#999;margin-top:10px;word-break:break-all}
+  </style></head><body>
+  <h2>⚽ 1. SC 1911 Heiligenstadt</h2>
+  <p>Trainerversammlung – Anmeldung<br>QR-Code mit dem Smartphone scannen</p>
+  <img src="${src}">
+  <div class="url">${url}</div>
+  <script>window.onload=()=>{window.print();window.close();}<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
+// ── CSV Export ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const eventName = document.getElementById('event-name').value || 'Trainerversammlung';
+  const eventDate = document.getElementById('event-date').value || todayStr();
+  const header = ['Nr','Name','Verein','Status','Uhrzeit','Quelle'];
+  const rows = participants.map((p,i) => [
+    i+1, p.name, p.club||'', p.present?'Anwesend':'Abwesend', p.time, p.source
+  ]);
+  const csv = [header,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = eventName.replace(/\s+/g,'_')+'_'+eventDate+'.csv';
+  a.click();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+// Reste aus der alten localStorage-Version (vor der Firebase-Umstellung) entfernen
+function cleanupLegacyStorage() {
+  try {
+    localStorage.removeItem('sc1911_anmeldungen');
+    localStorage.removeItem('sc1911_meta');
+  } catch (e) {}
+}
+
+async function init() {
+  cleanupLegacyStorage();
+  activeEventId = await ensureActiveEvent();
+  db.ref('config/activeEvent').on('value', snap => {
+    if (snap.val()) {
+      activeEventId = snap.val();
+      updateQR();
+      updateViewingBanner();
+      refreshMeetingButtons();
+    }
+  });
+  initEventsIndex();
+  updateQR();
+  selectEvent(activeEventId);
+}
+init();
+</script>
+</body>
+</html>
