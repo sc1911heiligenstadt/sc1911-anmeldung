@@ -134,6 +134,35 @@
     body { background: white; }
     .card { border: none; box-shadow: none; padding: 0; }
   }
+  nav.tabs {
+    display: flex; gap: 4px; background: var(--card);
+    padding: 8px 24px 0; border-bottom: 1px solid var(--border);
+  }
+  nav.tabs button {
+    background: none; border: none; padding: 10px 16px;
+    font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer;
+    border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0;
+  }
+  nav.tabs button:hover { background: var(--bg); }
+  nav.tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab-section { display: none; }
+  .tab-section.active { display: block; }
+  .version-badge {
+    display: inline-block; background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35); color: #fff;
+    font-size: 11px; font-weight: 700; border-radius: 99px;
+    padding: 2px 9px; margin-left: 8px; vertical-align: middle;
+  }
+  .version-badge-link { cursor: pointer; }
+  .version-badge-link:hover, .version-badge-link:focus-visible { background: rgba(255,255,255,0.32); }
+  .info-wrap { max-width: 760px; margin: 24px auto; padding: 0 24px; }
+  .info-wrap .card { background: var(--card); border: 1px solid var(--border);
+                     border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .info-wrap h2 { font-size: 16px; margin: 0 0 10px; color: var(--primary); }
+  .info-wrap .card .version-badge { background: var(--bg); border-color: var(--border); color: var(--primary); }
+  .info-wrap p { font-size: 14px; line-height: 1.6; color: var(--muted); margin: 0; }
+  .changelog-list { list-style: disc; padding-left: 20px; margin: 0;
+                    font-size: 14px; line-height: 1.6; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -141,7 +170,7 @@
   <div class="header-left">
     <span class="icon">⚽</span>
     <div>
-      <h1>1. SC 1911 Heiligenstadt – Verwaltung</h1>
+      <h1>1. SC 1911 Heiligenstadt – Verwaltung <span class="version-badge version-badge-link" id="version-badge" role="button" tabindex="0" title="Versionshistorie ansehen"></span></h1>
       <p id="header-sub">Trainerversammlung · Teilnehmerliste</p>
     </div>
   </div>
@@ -151,6 +180,12 @@
   </div>
 </header>
 
+<nav class="tabs">
+  <button data-tab="verwaltung" class="active">Verwaltung</button>
+  <button data-tab="info">Info</button>
+</nav>
+
+<div class="tab-section active" id="tab-verwaltung">
 <div class="meta-bar">
   <label>Veranstaltung:</label>
   <input type="text" id="event-name" placeholder="z. B. Trainerversammlung Sommer 2026"
@@ -304,6 +339,24 @@
       <button class="btn btn-danger btn-sm" onclick="clearAll()" style="margin-top:4px">
         🗑 Alle Einträge löschen
       </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="tab-section" id="tab-info">
+  <div class="info-wrap">
+    <div class="card">
+      <h2>Über die Verwaltung <span class="version-badge" id="version-badge-2"></span></h2>
+      <p>
+        Teilnehmerliste der Trainerversammlung: Anmeldungen live mitverfolgen, QR-Code für
+        die Anmeldeseite anzeigen, Liste als CSV exportieren oder drucken und bei Bedarf eine
+        neue Versammlung starten.
+      </p>
+    </div>
+    <div class="card">
+      <h2>Änderungen</h2>
+      <ul class="changelog-list" id="changelog-list"></ul>
     </div>
   </div>
 </div>
@@ -1155,6 +1208,32 @@ async function init() {
   selectEvent(activeEventId);
 }
 init();
+
+// ---------- Info-Tab / Versionshistorie ----------
+const APP_VERSION = '1.0';
+const APP_CHANGELOG = [
+  'Teilnehmerliste der Versammlung, aktualisiert sich live bei jeder neuen Anmeldung',
+  'QR-Code zur Anmeldeseite zum Einblenden oder Ausdrucken',
+  'Veranstaltungsname und Datum frei setzbar',
+  'Export als CSV für Excel und Druckansicht der Liste',
+  'Neue Versammlung starten, ohne die alte Liste zu verlieren'
+];
+function activateTab(name) {
+  document.querySelectorAll('nav.tabs button[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
+}
+(function setupInfoTab() {
+  document.querySelectorAll('#version-badge, #version-badge-2').forEach(el => { el.textContent = 'v' + APP_VERSION; });
+  document.getElementById('changelog-list').innerHTML = APP_CHANGELOG.map(c => '<li>' + c + '</li>').join('');
+  document.querySelectorAll('nav.tabs button[data-tab]').forEach(b => {
+    b.addEventListener('click', () => activateTab(b.dataset.tab));
+  });
+  const badge = document.getElementById('version-badge');
+  badge.addEventListener('click', () => activateTab('info'));
+  badge.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateTab('info'); }
+  });
+})();
 </script>
 </body>
 </html>
