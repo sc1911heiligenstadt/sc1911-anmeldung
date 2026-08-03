@@ -153,8 +153,6 @@
     font-size: 11px; font-weight: 700; border-radius: 99px;
     padding: 2px 9px; margin-left: 8px; vertical-align: middle;
   }
-  .version-badge-link { cursor: pointer; }
-  .version-badge-link:hover, .version-badge-link:focus-visible { background: rgba(255,255,255,0.32); }
   .info-wrap { max-width: 760px; margin: 24px auto; padding: 0 24px; }
   .info-wrap .card { background: var(--card); border: 1px solid var(--border);
                      border-radius: 12px; padding: 20px; margin-bottom: 16px; }
@@ -187,7 +185,7 @@
   <div class="header-left">
     <span class="icon">⚽</span>
     <div>
-      <h1>1. SC 1911 Heiligenstadt – Verwaltung <span class="version-badge version-badge-link" id="version-badge" role="button" tabindex="0" title="Versionshistorie ansehen"></span></h1>
+      <h1>1. SC 1911 Heiligenstadt – Verwaltung</h1>
       <p id="header-sub">Trainerversammlung · Teilnehmerliste</p>
     </div>
   </div>
@@ -1296,11 +1294,6 @@ function activateTab(name) {
   document.getElementById('changelog-list').innerHTML = APP_CHANGELOG.map(c => '<li>' + c + '</li>').join('');
   document.querySelectorAll('nav.tabs button[data-tab]').forEach(b => {
     b.addEventListener('click', () => activateTab(b.dataset.tab));
-  });
-  const badge = document.getElementById('version-badge');
-  badge.addEventListener('click', () => activateTab('info'));
-  badge.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateTab('info'); }
   });
 })();
 </script>

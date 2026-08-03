@@ -143,7 +143,6 @@
     font-size: 11px; font-weight: 700; border-radius: 99px;
     padding: 2px 9px; margin-left: 6px; vertical-align: middle;
   }
-  .version-badge-link { cursor: pointer; }
   nav {
     display: flex; gap: 4px; justify-content: center;
     background: var(--card); border-bottom: 1px solid var(--border);
@@ -209,7 +208,7 @@
 <div class="card" id="form-card">
   <img class="logo" src="logo.png" alt="1. SC 1911 e.V. Heilbad Heiligenstadt" />
   <div class="club-name">1. SC 1911 Heiligenstadt</div>
-  <h1>Trainerversammlung <span class="version-badge version-badge-link" id="version-badge" role="button" tabindex="0" title="Versionshistorie ansehen"></span></h1>
+  <h1>Trainerversammlung</h1>
   <p class="event-info" id="event-info">Lade…</p>
 
   <nav>
@@ -513,11 +512,6 @@ function activateTab(name) {
   document.getElementById('changelog-list').innerHTML = APP_CHANGELOG.map(c => '<li>' + c + '</li>').join('');
   document.querySelectorAll('nav button[data-tab]').forEach(b => {
     b.addEventListener('click', () => activateTab(b.dataset.tab));
-  });
-  const badge = document.getElementById('version-badge');
-  badge.addEventListener('click', () => activateTab('info'));
-  badge.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateTab('info'); }
   });
 })();
 </script>
