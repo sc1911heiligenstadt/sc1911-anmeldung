@@ -48,7 +48,14 @@
     background: var(--card); border: 1px solid var(--border);
     border-radius: 12px; padding: 20px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    /* Grid-Kinder haben min-width:auto und wachsen sonst auf die Breite ihres
+       breitesten Inhalts. Am Handy sprengte die Teilnehmer-Tabelle dadurch die
+       Karte auf 467px und schob die ganze Seite 108px seitlich raus. */
+    min-width: 0;
   }
+  /* Die Teilnehmer-Tabelle hat fuenf Spalten und wird mit echten Namen ueber
+     400px breit. Sie scrollt in sich, statt die Seite mitzuschieben. */
+  #table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
   .btn {
     display: inline-flex; align-items: center; gap: 6px;
@@ -1278,6 +1285,7 @@ function pwGateUnlock() {
 // ---------- Info-Tab / Versionshistorie ----------
 const APP_VERSION = '1.0';
 const APP_CHANGELOG = [
+  'Die Teilnehmerliste scrollt am Handy in sich, statt die ganze Seite seitlich mitzuschieben — mit echten Namen war sie über 400 Pixel breit und die Spalte „Aktionen“ lag außerhalb des Bildschirms',
   'Am Handy sind Eingabefelder mindestens 16 Pixel groß — der iPhone-Browser zoomt beim Antippen nicht mehr ungefragt in die Seite hinein',
   'Zugang zur Verwaltung ist komplett passwortgeschützt — das Passwort wird serverseitig geprüft und steht nicht im Quellcode',
   'Teilnehmerliste der Versammlung, aktualisiert sich live bei jeder neuen Anmeldung',
