@@ -404,7 +404,11 @@
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- qrcodejs stand hier bis 2026-08-28 als blockierender Script-Verweis: der Parser
+     hielt bei jedem Seitenaufruf an, um eine Bibliothek zu holen, die nur
+     _buildQR() braucht. Wird jetzt bei Bedarf nachgeladen (ladeQrLib weiter
+     unten, gleiches Muster wie raumnutzung/app.js ladePdfLib). Firebase bleibt
+     fest: es traegt die App und wird sofort gebraucht. -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
@@ -1156,10 +1160,36 @@ function generateQR() {
   qrTimeout = setTimeout(_buildQR, 400);
 }
 
-function _buildQR() {
+// Holt qrcodejs erst, wenn wirklich ein QR-Code gezeichnet wird. Merkt sich den
+// laufenden Ladevorgang, damit schnelles Tippen im URL-Feld nicht mehrere
+// <script>-Tags anhaengt. Vorlage: raumnutzung/app.js ladePdfLib.
+let qrLibLadevorgang = null;
+function ladeQrLib() {
+  if (typeof QRCode !== 'undefined') return Promise.resolve();
+  if (qrLibLadevorgang) return qrLibLadevorgang;
+  qrLibLadevorgang = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    s.onload = () => resolve();
+    s.onerror = () => {
+      qrLibLadevorgang = null; // naechster Versuch darf es erneut probieren
+      reject(new Error('QR-Bibliothek konnte nicht geladen werden (Internetverbindung noetig).'));
+    };
+    document.head.appendChild(s);
+  });
+  return qrLibLadevorgang;
+}
+
+async function _buildQR() {
   const url = document.getElementById('qr-url').value.trim();
   const display = document.getElementById('qr-display');
   if (!url) { display.innerHTML = '<p style="color:var(--muted);font-size:13px;">QR-Code wird erzeugt…</p>'; return; }
+  try {
+    await ladeQrLib();
+  } catch (e) {
+    display.innerHTML = '<p style="color:var(--muted);font-size:13px;">' + e.message + '</p>';
+    return;
+  }
   display.innerHTML = '';
   const div = document.createElement('div');
   display.appendChild(div);
