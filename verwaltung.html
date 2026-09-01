@@ -424,6 +424,25 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+// ── Netz- und Rechtefehler sichtbar machen ───────────────────────────────────
+//
+// Die Schreibwege gehen direkt in den Klick-Handlern nach Firebase, ohne
+// eigenes catch. Schlägt einer fehl — WLAN weg in der Halle, Token abgelaufen,
+// Regelverstoß —, verpuffte der Klick bisher lautlos: die Oberfläche zeigte
+// weiter den alten Stand, und die einzige Spur war eine unhandledrejection in
+// einer Konsole, die niemand ansieht.
+//
+// ⚠️ Die Konsolenmeldung bleibt bewusst stehen (kein preventDefault) — beim
+// Nachsehen ist sie die genauere Quelle.
+window.addEventListener('unhandledrejection', (e) => {
+  const grund = String((e.reason && e.reason.message) || e.reason || '');
+  if (/permission|denied|auth|token/i.test(grund)) {
+    alert('Nicht gespeichert — die Anmeldung ist abgelaufen.\n\nBitte die Seite neu laden.');
+  } else {
+    alert('Nicht gespeichert — keine Verbindung zum Server.\n\nBitte die Verbindung prüfen und es noch einmal versuchen.');
+  }
+});
+
 let sortCol = 'timestamp', sortDir = -1;
 let participants = [];
 let activeEventId = null;
@@ -799,6 +818,30 @@ async function deleteEvent(eventId) {
     if (wasViewing) selectEvent(activeEventId);
     return;
   }
+
+  // ⚠️ Ab hier ist die Loeschung unwiderruflich durch. Scheitert das
+  // Umschalten auf die naechste Versammlung, bliebe config/activeEvent auf
+  // der geloeschten ID stehen -- und der angezeigte QR-Code fuehrte weiter
+  // dorthin. Trainer scannen ihn, melden sich an, und die Anmeldungen
+  // landen unter einer Versammlung ohne Namen und ohne Datum.
+  //
+  // Die globale Wache oben meldete hier nur "nicht gespeichert". Das waere
+  // irrefuehrend: geloescht IST, nur das Umschalten fehlt. Deshalb ein
+  // eigener Satz, der genau das sagt und den naechsten Schritt nennt.
+  try {
+    await schalteNaechsteAktiv();
+  } catch (e) {
+    alert('Die Versammlung ist gelöscht — aber das Umschalten auf die nächste ' +
+          'hat nicht geklappt.\n\nDer QR-Code zeigt bis dahin noch auf die ' +
+          'gelöschte Versammlung. Bitte die Seite neu laden und eine ' +
+          'Versammlung auswählen, bevor sich jemand anmeldet.');
+    return;
+  }
+}
+
+// Der zweite Teil des Loeschens, herausgezogen: so kann deleteEvent den
+// Fehlschlag genau hier abfangen, ohne den remove()-Aufruf mit einzuschliessen.
+async function schalteNaechsteAktiv() {
 
   // Aktive Versammlung wurde gelöscht: jüngste verbleibende übernehmen, sonst neu anlegen
   const snap = await db.ref('veranstaltungen').once('value');
@@ -1336,6 +1379,8 @@ function pwGateUnlock() {
 // ---------- Info-Tab / Versionshistorie ----------
 const APP_VERSION = '1.0';
 const APP_CHANGELOG = [
+  'Ein fehlgeschlagenes Speichern wird jetzt gemeldet statt verschluckt — fällt das WLAN aus oder ist die Anmeldung abgelaufen, verpuffte der Klick bisher lautlos: die Seite zeigte weiter den alten Stand, ohne ein Wort',
+  'Beim Löschen einer aktiven Versammlung sagt die Seite Bescheid, wenn zwar gelöscht wurde, das Umschalten auf die nächste aber nicht klappte — der QR-Code zeigt dann noch auf die gelöschte Versammlung, und das muss man wissen, bevor sich jemand anmeldet',
   'Veranstaltungsname und Datum gehen nicht mehr verloren, wenn man direkt nach dem Tippen wegklickt oder den Tab schließt — bisher wurde erst 400 Millisekunden nach der letzten Eingabe gespeichert, und was in dieser Zeit passierte, war weg',
   'Die Teilnehmerliste scrollt am Handy in sich, statt die ganze Seite seitlich mitzuschieben — mit echten Namen war sie über 400 Pixel breit und die Spalte „Aktionen“ lag außerhalb des Bildschirms',
   'Am Handy sind Eingabefelder mindestens 16 Pixel groß — der iPhone-Browser zoomt beim Antippen nicht mehr ungefragt in die Seite hinein',
