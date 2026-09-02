@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a56a0">
+<title>Trainerversammlung – Anmeldung</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+  :root {
+    --primary: #1a56a0;
+    --success: #057a55;
+    --bg: #f0f4ff;
+    --card: #ffffff;
+    --border: #d1d5db;
+    --text: #111827;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  .logo { width: 72px; height: auto; margin-bottom: 12px; }
+  .club-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .event-info {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    min-height: 18px;
+  }
+  label {
+    display: block;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  input[type="text"] {
+    width: 100%;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 14px;
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 18px;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  button {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  button:hover { filter: brightness(0.92); }
+  button:active { filter: brightness(0.85); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Success state */
+  .success-box {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+  }
+  .success-icon { font-size: 64px; }
+  .success-name { font-size: 20px; font-weight: 800; color: var(--text); }
+  .success-time { font-size: 13px; color: var(--muted); }
+  .success-msg {
+    background: #d1fae5;
+    color: #065f46;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    width: 100%;
+  }
+  .lock-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Duplicate state */
+  .duplicate-msg {
+    display: none;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .footer {
+    margin-top: 28px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .version-badge {
+    display: inline-block; background: var(--bg); color: var(--primary);
+    font-size: 11px; font-weight: 700; border-radius: 99px;
+    padding: 2px 9px; margin-left: 6px; vertical-align: middle;
+  }
+  nav {
+    display: flex; gap: 4px; justify-content: center;
+    background: var(--card); border-bottom: 1px solid var(--border);
+    padding: 8px 16px 0; margin: -16px -16px 16px;
+  }
+  nav button {
+    background: none; border: none; padding: 10px 16px;
+    font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer;
+    border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0;
+  }
+  nav button.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab-section { display: none; }
+  .tab-section.active { display: block; }
+  .info-text { font-size: 13px; line-height: 1.6; color: var(--muted); text-align: left; }
+  .changelog-list { list-style: disc; padding-left: 20px; margin: 0; text-align: left;
+                    font-size: 13px; line-height: 1.6; color: var(--muted); }
+
+/* ---------------------------------------------------------------------
+   Datenschutzhinweis nach Art. 13 DSGVO
+   ---------------------------------------------------------------------
+   Bewusst aufklappbar: die Angaben muessen vollstaendig dastehen, duerfen
+   das Formular aber nicht zuschuetten. Zugeklappt ist der Standard --
+   Art. 13 verlangt, dass die Information verfuegbar ist, nicht dass sie
+   ungefragt zwei Bildschirme fuellt.
+
+   Die Farben tragen Rueckfallwerte, weil derselbe Block in mehreren Repos
+   der Flotte steht und die Variablennamen dort nicht ueberall gleich
+   heissen. Ohne den Fallback waere die Schrift in manchen Apps schwarz
+   auf weiss statt gedaempft. */
+.ds-block {
+  border: 1px solid var(--line, var(--border, #dfe3e8));
+  border-radius: 8px;
+  background: #fbfcfd;
+  margin: 14px 0 0;
+}
+.ds-block > summary {
+  cursor: pointer;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--blue, #1f4e9c);
+  list-style: none;
+}
+/* Das eigene Dreieck statt des nativen Markers: Safari auf aelteren
+   iOS-Geraeten rendert list-style an <summary> nicht zuverlaessig. */
+.ds-block > summary::-webkit-details-marker { display: none; }
+.ds-block > summary::before { content: "\25B8\00A0"; }
+.ds-block[open] > summary::before { content: "\25BE\00A0"; }
+.ds-inhalt {
+  padding: 0 12px 12px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--muted, #667085);
+}
+.ds-inhalt p { margin: 0 0 8px; }
+.ds-inhalt strong { color: var(--text, #1c2330); }
+.ds-inhalt ul { margin: 0 0 8px; padding-left: 18px; }
+.ds-inhalt li { margin: 2px 0; }
+.ds-inhalt a { color: var(--blue, #1f4e9c); }
+</style>
+</head>
+<body>
+<div class="card" id="form-card">
+  <img class="logo" src="https://sc1911heiligenstadt.github.io/logo.svg" alt="1. SC 1911 Heiligenstadt e.V." />
+  <div class="club-name">1. SC 1911 Heiligenstadt</div>
+  <h1>Trainerversammlung</h1>
+  <p class="event-info" id="event-info">Lade…</p>
+
+  <nav>
+    <button data-tab="anmeldung" class="active">Anmeldung</button>
+    <button data-tab="info" style="margin-left:auto;">Info</button>
+  </nav>
+
+  <div class="tab-section active" id="tab-anmeldung">
+  <div id="form-section">
+    <div class="duplicate-msg" id="dup-msg"></div>
+    <label for="firstname-input">Vorname</label>
+    <input type="text" id="firstname-input" placeholder="Vorname" autocomplete="off"
+      onkeydown="if(event.key==='Enter') document.getElementById('lastname-input').focus()">
+    <label for="lastname-input">Nachname</label>
+    <input type="text" id="lastname-input" placeholder="Nachname" autocomplete="off"
+      onkeydown="if(event.key==='Enter') anmelden()">
+    <!-- Information nach Art. 13 DSGVO, direkt ueber dem Absenden-Knopf.
+         Kurz gehalten, weil hier nur der Name erhoben wird -- die Information
+         muss vollstaendig sein, nicht lang. -->
+    <details class="ds-block">
+      <summary>Was mit deinen Daten geschieht (Information nach Art. 13 DSGVO)</summary>
+      <div class="ds-inhalt">
+        <p><strong>Verantwortlich</strong> ist der 1. SC 1911 Heiligenstadt,
+        Leineberg 2, 37308 Heilbad Heiligenstadt, Telefon 03606 612206,
+        <a href="mailto:info@sc1911-heiligenstadt.de">info@sc1911-heiligenstadt.de</a>.</p>
+
+        <p><strong>Wozu und auf welcher Grundlage:</strong> Wir speichern deinen
+        Vor- und Nachnamen, um die Teilnehmerliste dieser Veranstaltung zu
+        führen und die Veranstaltung planen zu können
+        (Art. 6 Abs. 1 lit. f DSGVO — unser berechtigtes Interesse an einer
+        geordneten Durchführung). Weitere Angaben erheben wir hier nicht.</p>
+
+        <p><strong>Wer die Daten erhält:</strong> Nur die Personen im Verein,
+        die die Veranstaltung organisieren. Gespeichert wird auf Servern in
+        Deutschland, die ein Auftragsverarbeiter für uns betreibt. Eine
+        Weitergabe nach außen findet nicht statt.</p>
+
+        <p><strong>Wie lange:</strong> Bis die Veranstaltung abgewickelt ist.
+        Danach löschen wir die Liste, soweit sie nicht für die Abrechnung
+        gebraucht wird.</p>
+
+        <p><strong>Deine Rechte:</strong> Auskunft, Berichtigung, Löschung,
+        Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch
+        gegen die Verarbeitung. Wende dich dazu an die oben genannte Anschrift.
+        Beschweren kannst du dich beim Thüringer Landesbeauftragten für den
+        Datenschutz und die Informationsfreiheit.</p>
+
+        <p>Ausführlich steht das in der
+        <a href="https://www.sc1911-heiligenstadt.de/datenschutz/" target="_blank" rel="noopener">Datenschutzerklärung
+        des Vereins</a>.</p>
+      </div>
+    </details>
+
+    <button onclick="anmelden()" id="submit-btn">✔ Jetzt anmelden</button>
+  </div>
+
+  <div class="success-box" id="success-box">
+    <div class="success-icon">🎉</div>
+    <div class="success-name" id="success-name"></div>
+    <div class="success-time" id="success-time"></div>
+    <div class="success-msg">✅ Erfolgreich angemeldet!</div>
+    <div class="lock-note">🔒 Diese Anmeldung ist mit diesem Gerät verknüpft – eine erneute Anmeldung ist hier nicht möglich.</div>
+  </div>
+
+  </div>
+
+  <div class="tab-section" id="tab-info">
+    <h2 style="font-size:15px;margin:0 0 10px">Über die Anmeldung <span class="version-badge" id="version-badge-2"></span></h2>
+    <p class="info-text">
+      Hier meldest du dich für die angezeigte Veranstaltung an — Vor- und Nachname eintragen,
+      fertig. Die Anmeldung wird mit diesem Gerät verknüpft, damit niemand versehentlich
+      doppelt angemeldet wird.
+    </p>
+    <h2 style="font-size:15px;margin:18px 0 10px">Änderungen</h2>
+    <ul class="changelog-list" id="changelog-list"></ul>
+  
+    <div class="card" id="ds-info-karte">
+      <h2>Datenschutz</h2>
+      <p>Dieses Werkzeug gehört zu den internen Anwendungen des
+      1. SC 1911 Heiligenstadt. Die hier erfassten Daten werden ausschließlich
+      für die Vereinsarbeit verwendet und liegen auf Servern in Deutschland,
+      die ein Auftragsverarbeiter für den Verein betreibt. Eine Weitergabe an
+      Dritte findet nur statt, soweit sie für den jeweiligen Zweck erforderlich
+      oder gesetzlich vorgeschrieben ist.</p>
+      <p>Verantwortlich ist der 1. SC 1911 Heiligenstadt, Leineberg 2,
+      37308 Heilbad Heiligenstadt, Telefon 03606 612206,
+      <a href="mailto:info@sc1911-heiligenstadt.de">info@sc1911-heiligenstadt.de</a>.
+      Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung,
+      Datenübertragbarkeit und Widerspruch lassen sich unter dieser Anschrift
+      geltend machen. Beschwerden nimmt der Thüringer Landesbeauftragte für
+      den Datenschutz und die Informationsfreiheit entgegen.</p>
+      <p><a href="https://www.sc1911-heiligenstadt.de/datenschutz/" target="_blank" rel="noopener">Datenschutzerklärung des Vereins</a>
+      &middot;
+      <a href="https://www.sc1911-heiligenstadt.de/impressum-2/" target="_blank" rel="noopener">Impressum</a></p>
+    </div>
+</div>
+
+  <div class="footer">1. SC 1911 Heiligenstadt · Anmeldesystem</div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCTQPx36ENruBa4pswYspksSDkJmp6gyts",
+  authDomain: "trainerversammlung.firebaseapp.com",
+  databaseURL: "https://trainerversammlung-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "trainerversammlung",
+  storageBucket: "trainerversammlung.firebasestorage.app",
+  messagingSenderId: "759093739854",
+  appId: "1:759093739854:web:672174b8a7bd72729d1e1f"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let eventId = new URLSearchParams(location.search).get('event');
+let LOCK_KEY = null;
+let meetingEnded = false;
+
+// Namen robust vergleichen: Gross/Kleinschreibung egal, mehrfache/ungewoehnliche
+// Leerzeichen (z.B. aus CSV/Excel) werden zusammengefasst, damit "Thomas  Mueller"
+// und "Thomas Mueller" als dieselbe Person erkannt werden.
+function normalizeName(s) {
+  return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function showSuccess(name, time) {
+  document.getElementById('form-section').style.display = 'none';
+  document.getElementById('success-box').style.display = 'flex';
+  document.getElementById('success-name').textContent = name;
+  document.getElementById('success-time').textContent = 'Angemeldet um ' + time + ' Uhr';
+}
+
+// Gerätesperre: wenn dieses Gerät sich für diese Versammlung schon einmal angemeldet hat, keine erneute Anmeldung erlauben
+function checkDeviceLock() {
+  const locked = JSON.parse(localStorage.getItem(LOCK_KEY) || 'null');
+  if (locked) {
+    showSuccess(locked.name, locked.time);
+    return true;
+  }
+  return false;
+}
+
+// Load event info (live, in case die Verwaltung-Seite die Veranstaltung ändert)
+function loadEventInfo() {
+  db.ref('veranstaltungen/' + eventId + '/meta').on('value', snap => {
+    const meta = snap.val() || {};
+    const el = document.getElementById('event-info');
+    if (meta.name || meta.date) {
+      let txt = meta.name || 'Trainerversammlung';
+      if (meta.date) {
+        txt += ' · ' + new Date(meta.date + 'T12:00:00').toLocaleDateString('de-DE', {
+          day: '2-digit', month: '2-digit', year: 'numeric'
+        });
+      }
+      el.textContent = txt;
+    } else {
+      el.textContent = new Date().toLocaleDateString('de-DE', {
+        weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+      });
+    }
+    meetingEnded = !!meta.endedAt;
+    applyEndedState();
+  });
+}
+
+// Beendete Versammlung: keine Anmeldung mehr möglich (live, falls während offener Seite beendet)
+function applyEndedState() {
+  const submitBtn = document.getElementById('submit-btn');
+  const dupMsg = document.getElementById('dup-msg');
+  const formVisible = document.getElementById('form-section').style.display !== 'none';
+  if (meetingEnded) {
+    if (submitBtn) submitBtn.disabled = true;
+    if (dupMsg && formVisible) {
+      dupMsg.textContent = '🔒 Diese Versammlung ist bereits beendet. Eine Anmeldung ist nicht mehr möglich.';
+      dupMsg.style.display = 'block';
+      dupMsg.dataset.ended = '1';
+    }
+  } else {
+    if (submitBtn) submitBtn.disabled = false;
+    // Reaktiviert: ggf. zurückgebliebene "beendet"-Meldung entfernen
+    if (dupMsg && dupMsg.dataset.ended === '1') {
+      dupMsg.style.display = 'none';
+      dupMsg.textContent = '';
+      delete dupMsg.dataset.ended;
+    }
+  }
+}
+
+function anmelden() {
+  if (!eventId) {
+    alert('Kein gültiger Anmeldelink. Bitte den QR-Code der Verwaltungsseite neu scannen.');
+    return;
+  }
+  if (meetingEnded) {
+    const dupMsg = document.getElementById('dup-msg');
+    dupMsg.textContent = '🔒 Diese Versammlung ist bereits beendet. Eine Anmeldung ist nicht mehr möglich.';
+    dupMsg.style.display = 'block';
+    return;
+  }
+  if (checkDeviceLock()) return;
+
+  const firstEl = document.getElementById('firstname-input');
+  const lastEl = document.getElementById('lastname-input');
+  const firstname = firstEl.value.trim();
+  const lastname = lastEl.value.trim();
+  const name = (firstname + ' ' + lastname).trim();
+  const dupMsg = document.getElementById('dup-msg');
+  const submitBtn = document.getElementById('submit-btn');
+  dupMsg.style.display = 'none';
+
+  if (!firstname || !lastname) {
+    const missingEl = !firstname ? firstEl : lastEl;
+    missingEl.focus();
+    [firstEl, lastEl].forEach(el => { if (!el.value.trim()) el.style.borderColor = '#ef4444'; });
+    setTimeout(() => { firstEl.style.borderColor = ''; lastEl.style.borderColor = ''; }, 1500);
+    return;
+  }
+
+  submitBtn.disabled = true;
+  const anmeldungenRef = db.ref('veranstaltungen/' + eventId + '/anmeldungen');
+  anmeldungenRef.once('value').then(snap => {
+    const data = snap.val() || {};
+    const target = normalizeName(name);
+    const match = Object.entries(data).find(([k, p]) => normalizeName(p.name) === target);
+
+    if (match) {
+      const [key, existing] = match;
+      if (existing.present) {
+        submitBtn.disabled = false;
+        dupMsg.textContent = '⚠️ ' + existing.name + ' ist bereits angemeldet (' + existing.time + ' Uhr).';
+        dupMsg.style.display = 'block';
+        lastEl.select();
+        return;
+      }
+      // Person steht auf der importierten Liste, war aber noch nicht eingecheckt -> jetzt einchecken
+      const now = new Date();
+      const time = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      return anmeldungenRef.child(key).update({
+        present: true,
+        time,
+        timestamp: now.toISOString()
+      }).then(() => {
+        submitBtn.disabled = false;
+        localStorage.setItem(LOCK_KEY, JSON.stringify({ name: existing.name, time }));
+        showSuccess(existing.name, time);
+      });
+    }
+
+    // Name steht nicht auf der Teilnehmerliste -> Selbstanmeldung per QR-Code nicht möglich
+    submitBtn.disabled = false;
+    dupMsg.textContent = '❌ ' + name + ' steht nicht auf der Teilnehmerliste. Bitte beim Trainer melden.';
+    dupMsg.style.display = 'block';
+    lastEl.select();
+  }).catch(err => {
+    submitBtn.disabled = false;
+    alert('Fehler bei der Anmeldung: ' + err.message);
+  });
+}
+
+function init() {
+  // Reste aus der alten localStorage-Version (vor der Firebase-Umstellung) entfernen
+  try {
+    localStorage.removeItem('sc1911_anmeldungen');
+    localStorage.removeItem('sc1911_meta');
+  } catch (e) {}
+
+  if (eventId) {
+    LOCK_KEY = 'sc1911_meine_anmeldung_' + eventId;
+    loadEventInfo();
+    checkDeviceLock();
+    return;
+  }
+  // Kein Link-Parameter (alter/manuell aufgerufener Link) -> aktive Versammlung nehmen
+  db.ref('config/activeEvent').once('value').then(snap => {
+    eventId = snap.val();
+    if (!eventId) {
+      document.getElementById('event-info').textContent = 'Keine aktive Versammlung gefunden.';
+      document.getElementById('submit-btn').disabled = true;
+      return;
+    }
+    LOCK_KEY = 'sc1911_meine_anmeldung_' + eventId;
+    loadEventInfo();
+    checkDeviceLock();
+  });
+}
+init();
+
+// ---------- Info-Tab / Versionshistorie ----------
+const APP_VERSION = '1.0';
+const APP_CHANGELOG = [
+  'Anmeldung zur Veranstaltung mit Vor- und Nachname, direkt am Handy',
+  'Anmeldung ist mit dem Gerät verknüpft — keine versehentliche Doppelanmeldung',
+  'Hinweis, wenn der Name schon angemeldet ist',
+  'Bestätigung mit Uhrzeit direkt nach dem Absenden'
+];
+function activateTab(name) {
+  document.querySelectorAll('nav button[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
+}
+(function setupInfoTab() {
+  document.querySelectorAll('#version-badge, #version-badge-2').forEach(el => { el.textContent = 'v' + APP_VERSION; });
+  document.getElementById('changelog-list').innerHTML = APP_CHANGELOG.map(c => '<li>' + c + '</li>').join('');
+  document.querySelectorAll('nav button[data-tab]').forEach(b => {
+    b.addEventListener('click', () => activateTab(b.dataset.tab));
+  });
+})();
+</script>
+</body>
+</html>
