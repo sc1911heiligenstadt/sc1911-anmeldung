@@ -210,10 +210,10 @@
 
 <div class="tab-section active" id="tab-verwaltung">
 <div class="meta-bar">
-  <label>Veranstaltung:</label>
+  <label for="event-name">Veranstaltung:</label>
   <input type="text" id="event-name" placeholder="z. B. Trainerversammlung Sommer 2026"
     style="width:280px" oninput="saveMeta()" onchange="flushMeta()">
-  <label>Datum:</label>
+  <label for="event-date">Datum:</label>
   <input type="date" id="event-date" oninput="saveMeta()" onchange="flushMeta()">
   <button id="btn-new-event" class="btn btn-success btn-sm" style="display:none" onclick="openNewEventDialog()">🆕 Neue Versammlung starten</button>
   <button id="btn-end-meeting" class="btn btn-danger btn-sm" style="display:none" onclick="endMeeting()">🔴 Besprechung beenden</button>
@@ -287,11 +287,11 @@
 <div id="new-event-overlay" class="no-print" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:20px">
   <div class="card" style="max-width:420px;width:100%">
     <h2 style="margin-bottom:14px">🆕 Neue Versammlung starten</h2>
-    <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Name der Versammlung</label>
+    <label for="new-event-name" style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Name der Versammlung</label>
     <input type="text" id="new-event-name" placeholder="z. B. Trainerversammlung Sommer 2026"
       style="width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:14px;margin-bottom:14px"
       onkeydown="if(event.key==='Enter') document.getElementById('new-event-date').focus()">
-    <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Datum</label>
+    <label for="new-event-date" style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Datum</label>
     <input type="date" id="new-event-date"
       style="width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:14px;margin-bottom:18px"
       onkeydown="if(event.key==='Enter') confirmNewEvent()">
