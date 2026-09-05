@@ -635,17 +635,21 @@ function showComparison() {
   });
 
   const rows = Object.values(persons).map(person => {
-    const presentCount = selected.filter(ev => person.perEvent[ev.id]).length;
-    const quote = Math.round((presentCount / selected.length) * 100);
-    return { ...person, quote };
+    // Nur die Versammlungen zaehlen, bei denen die Person ueberhaupt auf der
+    // Liste stand. "stand gar nicht drauf" (undefined) ist nicht dasselbe wie
+    // "war eingeladen und nicht da" (false).
+    const geladen = selected.filter(ev => person.perEvent[ev.id] !== undefined);
+    const presentCount = geladen.filter(ev => person.perEvent[ev.id]).length;
+    const quote = geladen.length ? Math.round((presentCount / geladen.length) * 100) : 0;
+    return { ...person, quote, geladenCount: geladen.length };
   });
   rows.sort((a, b) => b.quote - a.quote || a.name.localeCompare(b.name));
 
   const colHead = selected.map(ev => `<th>${esc(ev.meta.name || 'Ohne Namen')}${ev.meta.date ? ' (' + new Date(ev.meta.date + 'T12:00:00').toLocaleDateString('de-DE') + ')' : ''}</th>`).join('');
   const rowHtml = r => `<tr>
       <td>${esc(r.name)}</td>
-      ${selected.map(ev => `<td style="text-align:center">${r.perEvent[ev.id] ? '✓' : '✗'}</td>`).join('')}
-      <td style="text-align:center;font-weight:700">${r.quote}%</td>
+      ${selected.map(ev => `<td style="text-align:center">${r.perEvent[ev.id] === undefined ? '<span style="color:#9ca3af">–</span>' : (r.perEvent[ev.id] ? '✓' : '✗')}</td>`).join('')}
+      <td style="text-align:center;font-weight:700">${r.quote}%<span style="font-weight:400;color:#6b7280"> (${r.geladenCount})</span></td>
     </tr>`;
 
   const w = window.open('', '_blank');
@@ -661,7 +665,10 @@ function showComparison() {
     @media print { button { display:none } }
   </style></head><body>
   <h1>⚽ 1. SC 1911 Heiligenstadt – Vergleich</h1>
-  <div class="sub">${selected.length} Versammlungen · ${rows.length} Teilnehmer</div>
+  <div class="sub">${selected.length} Versammlungen · ${rows.length} Teilnehmer<br>
+    ✓ = da · ✗ = eingeladen, nicht da · – = stand damals nicht auf der Liste.
+    Die Quote zählt nur die Versammlungen, bei denen die Person auf der Liste stand
+    (Zahl in Klammern).</div>
   <table><thead><tr><th>Name</th>${colHead}<th>Quote</th></tr></thead>
   <tbody>${rows.map(rowHtml).join('')}</tbody></table>
   <button onclick="window.print()" style="margin-top:20px;padding:10px 16px;border:none;border-radius:7px;background:#1a56db;color:white;font-weight:600;cursor:pointer">🖨 Drucken / Als PDF speichern</button>
@@ -1382,6 +1389,7 @@ function pwGateUnlock() {
 // ---------- Info-Tab / Versionshistorie ----------
 const APP_VERSION = '1.0';
 const APP_CHANGELOG = [
+  'Im Vergleich mehrerer Versammlungen zählt nur noch, wo jemand wirklich auf der Liste stand — bisher bekam ein Trainer, der erst später dazukam, für die Zeit davor Kreuze und damit eine viel zu schlechte Quote. Wer damals nicht auf der Liste stand, bekommt jetzt einen Strich, und hinter der Quote steht, aus wie vielen Versammlungen sie gerechnet ist',
   'Wer über „Teilnehmer verwalten“ nachgetragen wird, steht auch bei der nächsten Versammlung wieder auf der Liste — bisher fiel dieser Name beim Anlegen der neuen Versammlung still heraus, und der Trainer wurde am QR-Code abgewiesen, ohne dass jemand wusste warum. Der Gast, den man auf der Hauptseite spontan einträgt, bleibt wie bisher nur für diesen Abend',
   'Ein fehlgeschlagenes Speichern wird jetzt gemeldet statt verschluckt — fällt das WLAN aus oder ist die Anmeldung abgelaufen, verpuffte der Klick bisher lautlos: die Seite zeigte weiter den alten Stand, ohne ein Wort',
   'Beim Löschen einer aktiven Versammlung sagt die Seite Bescheid, wenn zwar gelöscht wurde, das Umschalten auf die nächste aber nicht klappte — der QR-Code zeigt dann noch auf die gelöschte Versammlung, und das muss man wissen, bevor sich jemand anmeldet',
