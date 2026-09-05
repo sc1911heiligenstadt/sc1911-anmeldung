@@ -699,7 +699,10 @@ async function confirmNewEvent() {
     const prevSnap = await db.ref('veranstaltungen/' + activeEventId + '/anmeldungen').once('value');
     const prevData = prevSnap.val() || {};
     Object.values(prevData).forEach(p => {
-      if (p.source === 'Manuell') return; // nur temporär für diese Versammlung, nicht übernehmen
+      // Nur der Gast von der Hauptseite ist temporär (manualAdd, present:true).
+      // Wer über den Verwalten-Dialog nachgetragen wurde, gehört in die Stammliste
+      // und muss mitkommen ('Stammliste', Altbestand: 'Manuell' + present:false).
+      if (p.source === 'Manuell' && p.present === true) return;
       carryOver[normalizeName(p.name)] = {
         name: p.name,
         club: p.club || '1. SC 1911 Heiligenstadt',
@@ -1044,7 +1047,7 @@ function addParticipant() {
     club: '1. SC 1911 Heiligenstadt',
     time: '',
     timestamp: '',
-    source: 'Manuell',
+    source: 'Stammliste',
     present: false
   }).then(() => {
     resultEl.textContent = '✅ ' + name + ' hinzugefügt (als abwesend).';
@@ -1379,6 +1382,7 @@ function pwGateUnlock() {
 // ---------- Info-Tab / Versionshistorie ----------
 const APP_VERSION = '1.0';
 const APP_CHANGELOG = [
+  'Wer über „Teilnehmer verwalten“ nachgetragen wird, steht auch bei der nächsten Versammlung wieder auf der Liste — bisher fiel dieser Name beim Anlegen der neuen Versammlung still heraus, und der Trainer wurde am QR-Code abgewiesen, ohne dass jemand wusste warum. Der Gast, den man auf der Hauptseite spontan einträgt, bleibt wie bisher nur für diesen Abend',
   'Ein fehlgeschlagenes Speichern wird jetzt gemeldet statt verschluckt — fällt das WLAN aus oder ist die Anmeldung abgelaufen, verpuffte der Klick bisher lautlos: die Seite zeigte weiter den alten Stand, ohne ein Wort',
   'Beim Löschen einer aktiven Versammlung sagt die Seite Bescheid, wenn zwar gelöscht wurde, das Umschalten auf die nächste aber nicht klappte — der QR-Code zeigt dann noch auf die gelöschte Versammlung, und das muss man wissen, bevor sich jemand anmeldet',
   'Veranstaltungsname und Datum gehen nicht mehr verloren, wenn man direkt nach dem Tippen wegklickt oder den Tab schließt — bisher wurde erst 400 Millisekunden nach der letzten Eingabe gespeichert, und was in dieser Zeit passierte, war weg',
