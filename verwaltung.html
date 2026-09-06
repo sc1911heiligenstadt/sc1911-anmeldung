@@ -590,7 +590,7 @@ function renderVersammlungenList(entries) {
     const checked = compareSelection.has(e.id);
     const disableCheckbox = !checked && compareSelection.size >= 4;
     const checkboxHtml = compareMode
-      ? `<input type="checkbox" style="margin-right:10px;transform:scale(1.3)" ${checked ? 'checked' : ''} ${disableCheckbox ? 'disabled' : ''} onchange="toggleCompareSelect('${e.id}', this.checked)">`
+      ? `<input type="checkbox" aria-label="Diese Versammlung zum Vergleich auswählen" style="margin-right:10px;transform:scale(1.3)" ${checked ? 'checked' : ''} ${disableCheckbox ? 'disabled' : ''} onchange="toggleCompareSelect('${e.id}', this.checked)">`
       : '';
     return `<div style="border:1px solid var(--border);border-radius:7px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
       <div style="display:flex;align-items:center">
