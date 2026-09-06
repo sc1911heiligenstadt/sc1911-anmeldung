@@ -348,7 +348,7 @@
       CSV/TXT – eine Zeile pro Person ("Vorname;Nachname" oder voller Name). Importierte Personen stehen zunächst auf <strong>abwesend</strong>.
     </p>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
-      <input type="file" id="import-file" accept=".csv,.txt" style="flex:1;min-width:160px">
+      <input type="file" id="import-file" aria-label="Liste als Datei auswählen" accept=".csv,.txt" style="flex:1;min-width:160px">
       <button class="btn btn-success btn-sm" onclick="importCSV()">⬆ Importieren</button>
     </div>
     <div id="import-result" style="font-size:12px;color:var(--muted);margin-bottom:16px"></div>
