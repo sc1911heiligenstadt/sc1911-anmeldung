@@ -482,8 +482,8 @@ function renderTeilnehmerDeleteList() {
     <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);border-radius:7px;padding:6px 10px">
       <span style="font-size:13px">${esc(p.name)} <span class="badge ${p.present?'badge-present':'badge-absent'}" style="margin-left:6px">${p.present?'✓':'✗'}</span></span>
       <div style="display:flex;gap:6px">
-        <button class="btn btn-outline btn-sm" onclick="editEntry('${p.key}')">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="removeEntry('${p.key}')">🗑</button>
+        <button class="btn btn-outline btn-sm" aria-label="Teilnehmer bearbeiten" onclick="editEntry('${p.key}')">✏️</button>
+        <button class="btn btn-danger btn-sm" aria-label="Teilnehmer entfernen" onclick="removeEntry('${p.key}')">🗑</button>
       </div>
     </div>
   `).join('');
@@ -1290,7 +1290,7 @@ function printQR() {
   </style></head><body>
   <h2>⚽ 1. SC 1911 Heiligenstadt</h2>
   <p>Trainerversammlung – Anmeldung<br>QR-Code mit dem Smartphone scannen</p>
-  <img src="${src}">
+  <img src="${src}" alt="QR-Code zur Anmeldung">
   <div class="url">${url}</div>
   <script>window.onload=()=>{window.print();window.close();}<\/script>
   </body></html>`);
