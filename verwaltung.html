@@ -169,6 +169,16 @@
   .info-wrap p { font-size: 14px; line-height: 1.6; color: var(--muted); margin: 0; }
   .changelog-list { list-style: disc; padding-left: 20px; margin: 0;
                     font-size: 14px; line-height: 1.6; color: var(--muted); }
+  /* Die Karte "Funktionen" im Info-Reiter teilt sich die Klassen mit der
+     frueheren Aenderungsliste. Die Schriftgroesse muss hier stehen: sie hing
+     an .changelog-list, und genau diese Klasse hat die neue Karte nicht. */
+  #funktionen-list { display: flex; flex-direction: column; gap: 18px;
+                     font-size: 14px; line-height: 1.6; color: var(--muted); }
+  .changelog-group { display: flex; flex-direction: column; gap: 4px; }
+  .changelog-group .cg-title { font-weight: 700; font-size: 13px; color: var(--primary);
+                               text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px; }
+  .changelog-group .cg-items { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
+                               gap: 3px; color: var(--text); }
 
   /* Handy: Formularfelder mindestens 16px — iOS Safari zoomt beim Antippen
      eines kleineren Feldes automatisch hinein und wieder heraus zoomt es nicht. */
@@ -375,7 +385,7 @@
 <div class="tab-section" id="tab-info">
   <div class="info-wrap">
     <div class="card">
-      <h2>Über die Verwaltung <span class="version-badge" id="version-badge-2"></span></h2>
+      <h2>Über die Verwaltung</h2>
       <p>
         Teilnehmerliste der Trainerversammlung: Anmeldungen live mitverfolgen, QR-Code für
         die Anmeldeseite anzeigen, Liste als CSV exportieren oder drucken und bei Bedarf eine
@@ -383,8 +393,8 @@
       </p>
     </div>
     <div class="card">
-      <h2>Änderungen</h2>
-      <ul class="changelog-list" id="changelog-list"></ul>
+      <h2>Funktionen</h2>
+      <div id="funktionen-list"></div>
     </div>
   </div>
 
@@ -1393,7 +1403,94 @@ function pwGateUnlock() {
 
 // ---------- Info-Tab / Versionshistorie ----------
 const APP_VERSION = '1.0';
+// Was die Verwaltung kann -- Inhalt der Karte "Funktionen" im Info-Reiter.
+// Hier steht der Zustand, nicht die Aenderung; die Aenderungen stehen in
+// APP_CHANGELOG darunter.
+const APP_FUNKTIONEN = [
+  {
+    title: 'Wofür diese Seite da ist',
+    items: [
+      'Die Teilnehmerliste der Trainerversammlung führen und die Anwesenheit live mitverfolgen.',
+      'Gedacht für die Organisatoren — die Trainer selbst nutzen die Anmeldeseite hinter dem QR-Code.',
+      'Die Liste liegt bei Firebase und wird auf allen offenen Geräten sofort gleich angezeigt.'
+    ]
+  },
+  {
+    title: 'Zugang',
+    items: [
+      'Die ganze Seite ist mit einem Passwort geschützt, das der Server prüft.',
+      '„Teilnehmer verwalten“ verlangt zusätzlich ein eigenes Aktions-Passwort.',
+      'Über ihre Internetadresse ist die Seite für jeden erreichbar, der den Link kennt — die Tools-Übersicht versteckt nur den Link.'
+    ]
+  },
+  {
+    title: 'Versammlung einrichten',
+    items: [
+      'Name und Datum der Versammlung sind frei setzbar und erscheinen sofort auf der Anmeldeseite.',
+      '„Neue Versammlung starten“ übernimmt die letzte Teilnehmerliste, alle zunächst als abwesend.',
+      'Die bisherige Versammlung bleibt in der Historie erhalten.',
+      '„Besprechung beenden“ sperrt weitere Anmeldungen und gibt den Bericht frei.'
+    ]
+  },
+  {
+    title: 'QR-Code',
+    items: [
+      'Der QR-Code führt auf die Anmeldeseite der gerade aktiven Versammlung.',
+      'Er lässt sich ausdrucken oder als Bild speichern und weitergeben.'
+    ]
+  },
+  {
+    title: 'Teilnehmerliste',
+    items: [
+      'Die Liste aktualisiert sich bei jeder neuen Anmeldung von selbst.',
+      'Zwei Zähler zeigen, wie viele anwesend und wie viele abwesend sind.',
+      'Anwesend und abwesend lassen sich auch von Hand umschalten; ein Suchfeld filtert die Liste.',
+      'Am Handy scrollt die Liste in sich, statt die ganze Seite seitlich mitzuschieben.'
+    ]
+  },
+  {
+    title: 'Teilnehmer pflegen',
+    items: [
+      'Einzelne Namen hinzufügen, bearbeiten oder löschen.',
+      'Eine ganze Liste als CSV- oder TXT-Datei einlesen — eine Zeile je Person, „Vorname;Nachname“ oder voller Name.',
+      'Eingelesene Personen stehen zunächst auf abwesend.',
+      'Wer hier nachgetragen wird, steht auch bei der nächsten Versammlung wieder auf der Liste.'
+    ]
+  },
+  {
+    title: 'Gäste am Abend selbst',
+    items: [
+      'Auf der Hauptseite lässt sich jemand von Hand eintragen, der nicht auf der Liste steht — für Trainer ohne Smartphone.',
+      'Dieser Eintrag gilt nur für die laufende Versammlung und wandert nicht in die Stammliste.'
+    ]
+  },
+  {
+    title: 'Historie und Vergleich',
+    items: [
+      'Alle Versammlungen stehen in einer Übersicht und lassen sich ansehen, als Bericht drucken oder löschen.',
+      'Bis zu vier Versammlungen lassen sich nebeneinander vergleichen.',
+      'Im Vergleich zählt nur, wo jemand wirklich auf der Liste stand; für die Zeit davor steht ein Strich.',
+      'Hinter der Quote steht, aus wie vielen Versammlungen sie gerechnet ist.'
+    ]
+  },
+  {
+    title: 'Ausgeben und Drucken',
+    items: [
+      'Export der Liste als CSV für Excel.',
+      'Ausdruck der Teilnehmerliste und Ausdruck des Berichts einer einzelnen Versammlung.'
+    ]
+  },
+  {
+    title: 'Wenn etwas schiefgeht',
+    items: [
+      'Schlägt ein Speichern fehl, sagt die Seite Bescheid, statt den Klick lautlos verpuffen zu lassen.',
+      'Wird eine aktive Versammlung gelöscht und das Umschalten auf die nächste klappt nicht, weist die Seite darauf hin — der QR-Code zeigt dann noch auf die gelöschte Versammlung.',
+      'Name und Datum werden auch dann gesichert, wenn man direkt nach dem Tippen wegklickt oder den Reiter schließt.'
+    ]
+  }
+];
 const APP_CHANGELOG = [
+  'Der Info-Reiter zeigt jetzt die Karte „Funktionen“ — was die Seite kann, nach Themen geordnet. Die Liste der Änderungen und die Versionsnummer stehen dort nicht mehr; was sich geändert hat, steht weiterhin in den Neuigkeiten auf der Startseite der Tools-Übersicht',
   'Im Vergleich mehrerer Versammlungen zählt nur noch, wo jemand wirklich auf der Liste stand — bisher bekam ein Trainer, der erst später dazukam, für die Zeit davor Kreuze und damit eine viel zu schlechte Quote. Wer damals nicht auf der Liste stand, bekommt jetzt einen Strich, und hinter der Quote steht, aus wie vielen Versammlungen sie gerechnet ist',
   'Wer über „Teilnehmer verwalten“ nachgetragen wird, steht auch bei der nächsten Versammlung wieder auf der Liste — bisher fiel dieser Name beim Anlegen der neuen Versammlung still heraus, und der Trainer wurde am QR-Code abgewiesen, ohne dass jemand wusste warum. Der Gast, den man auf der Hauptseite spontan einträgt, bleibt wie bisher nur für diesen Abend',
   'Ein fehlgeschlagenes Speichern wird jetzt gemeldet statt verschluckt — fällt das WLAN aus oder ist die Anmeldung abgelaufen, verpuffte der Klick bisher lautlos: die Seite zeigte weiter den alten Stand, ohne ein Wort',
@@ -1412,9 +1509,29 @@ function activateTab(name) {
   document.querySelectorAll('nav.tabs button[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab-section').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
 }
+// Die Aenderungsliste steht seit 07.09.2026 NICHT mehr im Info-Reiter -- dort
+// zeigt die Karte "Funktionen", was die Seite kann. APP_CHANGELOG bleibt in der
+// Datei und wird weitergepflegt: er ist die Quelle fuer die grosse Anleitung und
+// fuer die Neuigkeiten auf der Startseite der Tools-Uebersicht. Der Renderer
+// bleibt darum stehen und laeuft nur, wenn es den Container gibt.
+function renderChangelog() {
+  const container = document.getElementById('changelog-list');
+  if (!container) return;
+  container.innerHTML = APP_CHANGELOG.map(c => '<li>' + c + '</li>').join('');
+}
+function renderFunktionen() {
+  const container = document.getElementById('funktionen-list');
+  if (!container) return;
+  container.innerHTML = APP_FUNKTIONEN.map(g => `
+    <div class="changelog-group">
+      <div class="cg-title">${esc(g.title)}</div>
+      <ul class="cg-items">${g.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>
+    </div>
+  `).join('');
+}
 (function setupInfoTab() {
-  document.querySelectorAll('#version-badge, #version-badge-2').forEach(el => { el.textContent = 'v' + APP_VERSION; });
-  document.getElementById('changelog-list').innerHTML = APP_CHANGELOG.map(c => '<li>' + c + '</li>').join('');
+  renderChangelog();
+  renderFunktionen();
   document.querySelectorAll('nav.tabs button[data-tab]').forEach(b => {
     b.addEventListener('click', () => activateTab(b.dataset.tab));
   });
